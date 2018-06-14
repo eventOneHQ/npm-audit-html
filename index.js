@@ -4,9 +4,12 @@ const program = require('commander')
 const reporter = require('./lib/reporter')
 const pkg = require('./package.json')
 
-program.version(pkg.version).option('-o, --output [output]', 'Output file')
+program
+  .version(pkg.version)
+  .option('-o, --output [output]', 'output file')
+  .option('-t, --template [handlebars file]', 'handlebars template file')
 
-const genReport = (stdin, output = 'npm-audit.html') => {
+const genReport = (stdin, output = 'npm-audit.html', template) => {
   if (!stdin) {
     console.log('No JSON')
     return process.exit(1)
@@ -20,8 +23,9 @@ const genReport = (stdin, output = 'npm-audit.html') => {
     return process.exit(1)
   }
 
-  const template = `${__dirname}/templates/template.hbs`
-  reporter(json, template, output)
+  const templateFile = template || `${__dirname}/templates/template.hbs`
+
+  reporter(json, templateFile, output)
     .then(() => {
       console.log(`Vulnerability snapshot saved at ${output}`)
       process.exit(0)
@@ -45,6 +49,6 @@ if (process.stdin.isTTY) {
   })
   process.stdin.on('end', function () {
     program.parse(process.argv)
-    genReport(stdin, program.output)
+    genReport(stdin, program.output, program.template)
   })
 }
