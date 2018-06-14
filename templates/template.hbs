@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4"
+        crossorigin="anonymous">
+
+    <title>NPM Audit Report</title>
+    <meta name="description" content="{{metadata.vulnerabilities.total}} known vulnerabilities found.">
+
+    <style>
+        .card {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md text-center">
+                <h1>NPM Audit Report</h1>
+
+                <h2>{{metadata.vulnerabilities.total}} known vulnerabilities | {{metadata.totalDependencies}} dependencies |
+                    {{moment date "MMMM Do YYYY, h:mm:ss a"}}</h2>
+                </p>
+            </div>
+        </div>
+        <div class="row">
+            {{#each advisories}}
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h1 class="card-title">
+                            <span class="badge badge-{{severityClass severity}}">{{severity}}</span>
+                            {{title}}
+                        </h1>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul>
+                                    <li>Module:
+                                        <a href="https://npmjs.com/package/{{module_name}}">{{module_name}}</a>
+                                    </li>
+                                    <li>Published: {{moment created "MMMM Do YYYY"}} </li>
+                                    <li>Reported by: {{reported_by.name}}</li>
+                                    <li>{{cwe}}</li>
+                                    {{#each cves}}
+                                    <li>{{this}}</li>
+                                    {{/each}}
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul>
+                                    <li>Vulnerable: {{vulnerable_versions}}</li>
+                                    <li>Patched: {{patched_versions}}</li>
+                                    <li>CVSS: {{metadata.exploitability}}</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <h3>Overview</h3>
+                        <p class="card-text">{{{markdown overview}}}</p>
+
+                        {{#if recommendation}}
+                        <h3>Remediation</h3>
+                        <p class="card-text">{{{markdown recommendation}}}</p>
+                        {{/if}} {{#if references}}
+                        <h3>References</h3>
+                        <p class="card-text">{{{markdown references}}}</p>
+                        {{/if}} {{#if action}}
+                        <h3>Action</h3>
+                        <p class="card-text">
+                            <code>npm {{action.action}} {{action.module}} {{#if action.depth}}--depth={{action.depth}}{{/if}}</code>
+                        </p>
+                        {{/if}}
+
+                        <a href="{{url}}" class="btn btn-primary">More about this vulnerability</a>
+                    </div>
+                </div>
+            </div>{{/each}}
+        </div>
+    </div>
+</body>
+
+</html>
