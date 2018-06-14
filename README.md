@@ -3,6 +3,8 @@
 <p align="center">
 <a href="http://commitizen.github.io/cz-cli/"><img src="https://img.shields.io/badge/commitizen-friendly-brightgreen.svg" alt="Commitizen friendly"></a>
 <a href="https://standardjs.com"><img src="https://img.shields.io/badge/code_style-standard-brightgreen.svg" alt="JavaScript Style Guide"></a>
+<a href="https://travis-ci.com/Filiosoft/npm-audit-html"><img src="https://travis-ci.com/Filiosoft/npm-audit-html.svg?branch=master" alt="Build Status"></a>
+
 </p>
 <p align="center"><b>Generate a HTML report for NPM Audit</b></p>
 

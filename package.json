@@ -7,11 +7,12 @@
     "npm-audit-html": "index.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint '*.js' 'lib/**/*.js' -f node_modules/eslint-html-reporter/reporter.js -o tests/eslint.html",
+    "test": "npm run lint && npm run audit-report && npm audit",
+    "lint": "eslint '*.js' 'lib/**/*.js' -f node_modules/eslint-html-reporter/reporter.js -o tests/eslint.html || true && eslint '*.js' 'lib/**/*.js'",
     "lint:fix": "eslint '*.js' 'lib/**/*.js' --fix",
     "lint!": "npm run format && npm run lint:fix",
     "format": "prettier --write '*.js' 'lib/**/*.js'",
+    "audit-report": "npm audit --json | node index.js -o tests/npm-audit.html",
     "cm": "git-cz",
     "pre-commit": "lint-staged"
   },
