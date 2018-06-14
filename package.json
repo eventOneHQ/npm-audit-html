@@ -1,7 +1,7 @@
 {
   "name": "npm-audit-html",
   "version": "0.0.1",
-  "description": "HTML Report for NPM Audit",
+  "description": "Generate a HTML report for NPM Audit",
   "main": "index.js",
   "bin": {
     "npm-audit-html": "index.js"
