@@ -35,6 +35,10 @@ If you want to specify the output file, add the `--output` option:
 npm audit --json | npm-audit-html --output report.html
 ```
 
+## Contributors
+[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/0)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/0)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/1)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/1)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/2)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/2)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/3)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/3)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/4)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/4)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/5)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/5)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/6)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/6)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/7)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/7)
+
+
 ## License
 
 [MIT](LICENSE)
