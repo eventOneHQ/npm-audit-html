@@ -65,6 +65,15 @@
                         <h3>Overview</h3>
                         <p class="card-text">{{{markdown overview}}}</p>
 
+                        <h3>Findings</h3>
+						{{#each findings}}							
+							<ul>
+							{{#each paths}}
+								<li>{{this}} </li>
+							{{/each}}
+							</ul>
+						{{/each}}
+
                         {{#if recommendation}}
                         <h3>Remediation</h3>
                         <p class="card-text">{{{markdown recommendation}}}</p>
