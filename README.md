@@ -1,9 +1,9 @@
 <h1 align="center">npm-audit-html</h1>
 
 <p align="center">
-<a href="https://github.com/Filiosoft/npm-audit-html/blob/master/LICENSE"><img src="https://img.shields.io/github/license/Filiosoft/npm-audit-html.svg" alt="GitHub license"></a>
+<a href="https://github.com/eventOneHQ/npm-audit-html/blob/master/LICENSE"><img src="https://img.shields.io/github/license/eventOneHQ/npm-audit-html.svg" alt="GitHub license"></a>
 <a href="https://www.npmjs.com/package/npm-audit-html"><img src="https://img.shields.io/npm/v/npm-audit-html.svg" alt="npm"></a>
-<a href="https://travis-ci.com/Filiosoft/npm-audit-html"><img src="https://travis-ci.com/Filiosoft/npm-audit-html.svg?branch=master" alt="Build Status"></a>
+<a href="https://travis-ci.com/eventOneHQ/npm-audit-html"><img src="https://travis-ci.com/eventOneHQ/npm-audit-html.svg?branch=master" alt="Build Status"></a>
 <a href="http://commitizen.github.io/cz-cli/"><img src="https://img.shields.io/badge/commitizen-friendly-brightgreen.svg" alt="Commitizen friendly"></a>
 <a href="https://standardjs.com"><img src="https://img.shields.io/badge/code_style-standard-brightgreen.svg" alt="JavaScript Style Guide"></a>
 <a href="https://github.com/semantic-release/semantic-release"><img src="https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg" alt="semantic-release"></a>
@@ -36,8 +36,8 @@ npm audit --json | npm-audit-html --output report.html
 ```
 
 ## Contributors
-[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/0)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/0)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/1)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/1)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/2)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/2)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/3)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/3)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/4)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/4)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/5)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/5)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/6)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/6)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/7)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/7)
 
+[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/0)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/0)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/1)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/1)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/2)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/2)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/3)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/3)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/4)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/4)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/5)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/5)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/6)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/6)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/7)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/7)
 
 ## License
 

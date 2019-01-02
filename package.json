@@ -18,8 +18,8 @@
     "semantic-release": "semantic-release",
     "travis-deploy-once": "travis-deploy-once --pro"
   },
-  "author": "Filiosoft Labs <opensource@filiosoft.com>",
-  "repository": "Filiosoft/npm-audit-html",
+  "author": "eventOne Labs <opensource@event1.io>",
+  "repository": "eventOneHQ/npm-audit-html",
   "license": "MIT",
   "devDependencies": {
     "commitizen": "^2.10.1",
