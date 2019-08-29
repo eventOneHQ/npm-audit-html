@@ -1,4 +1,4 @@
-name: Test
+name: Node CI
 
 on: [pull_request, push]
 
@@ -11,4 +11,4 @@ jobs:
         with:
           node-version: 12
       - run: npm ci
-      - run: npm test || true
+      - run: npm test
