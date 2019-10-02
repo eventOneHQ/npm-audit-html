@@ -10,6 +10,7 @@
     <link rel="stylesheet"
         href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css"
         integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.20/datatables.min.css" />
 
     <title>NPM Audit Report</title>
     <meta name="description" content="{{metadata.vulnerabilities.total}} known vulnerabilities found.">
@@ -61,6 +62,18 @@
         .table td {
             border-top: 1px solid #444;
         }
+
+        .form-control {
+            background-color: #fff;
+        }
+
+        .form-control:focus {
+            background-color: #fff;
+        }
+
+        pre code {
+            color: #fff;
+        }
     </style>
 </head>
 
@@ -104,7 +117,7 @@
         <div class="row">
             <div class="col">
 
-                <table class="table">
+                <table id="advisories" class="table">
                     <thead>
                         <tr>
                             <th scope="col">Name</th>
@@ -117,14 +130,14 @@
                         {{#each advisories}}
                         <tr>
                             <th scope="row">
-                                <a href="javascript:void(0)" data-toggle="modal"
-                                    data-target="#advisory-modal-{{id}}">{{title}}</a>
+                                <a href="{{url}}" data-toggle="modal" data-target="#advisory-modal-{{id}}">{{title}}</a>
                             </th>
                             <td>
                                 <a href="https://npmjs.com/package/{{module_name}}" target="_blank"
                                     rel="noopener">{{module_name}}</a>
                             </td>
-                            <td><span class="badge badge-{{severityClass severity}}">{{severity}}</span></td>
+                            <td data-order="{{severityNumber severity}}"><span
+                                    class="badge badge-{{severityClass severity}}">{{severity}}</span></td>
                             <td>
                                 {{cwe}}
                                 {{#each cves}}
@@ -222,6 +235,15 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.20/datatables.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#advisories').DataTable({
+                order: [[2, 'asc']]
+            });
+        });
+    </script>
 </body>
 
 </html>
