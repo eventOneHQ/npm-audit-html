@@ -11,7 +11,15 @@
 </p>
 <p align="center"><b>Generate a HTML report for NPM Audit</b></p>
 
-## Install
+## 📝 Table of Contents
+
+- [Getting Started](#getting_started)
+- [Usage](#usage)
+- [Contributing](CONTRIBUTING.md)
+- [Authors](#authors)
+- [Acknowledgments](#acknowledgement)
+
+## 🏁 Getting Started <a name = "getting_started"></a>
 
 ```
 $ npm install -g npm-audit-html
@@ -19,7 +27,7 @@ $ npm install -g npm-audit-html
 
 > This package uses async/await and requires Node.js 7.6
 
-## Usage
+## 🎈 Usage <a name="usage"></a>
 
 To generate a report, run the following:
 
@@ -35,9 +43,15 @@ If you want to specify the output file, add the `--output` option:
 npm audit --json | npm-audit-html --output report.html
 ```
 
-## Contributors
+## ✍️ Authors <a name = "authors"></a>
 
-[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/0)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/0)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/1)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/1)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/2)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/2)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/3)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/3)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/4)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/4)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/5)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/5)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/6)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/6)[![](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/images/7)](https://sourcerer.io/fame/nprail/Filiosoft/npm-audit-html/links/7)
+- [@nprail](https://github.com/nprail) - Maintainer
+
+See also the list of [contributors](https://github.com/eventOneHQ/npm-audit-html/contributors) who participated in this project.
+
+## 🎉 Acknowledgements <a name = "acknowledgement"></a>
+
+- Hat tip to anyone whose code was used
 
 ## License
 
