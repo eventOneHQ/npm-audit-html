@@ -17,6 +17,19 @@
     <title>NPM Audit Report</title>
     <meta name="description" content="{{metadata.vulnerabilities.total}} known vulnerabilities found.">
 
+
+    <style>
+        pre {
+            background-color: #333333;
+            padding: 15px;
+        }
+
+        pre code {
+            color: #fff;
+        }
+    </style>
+
+    {{#if_eq theme 'dark'}}
     <style>
         body {
             color: #fff;
@@ -77,10 +90,6 @@
             color: #fff;
         }
 
-        pre code {
-            color: #fff;
-        }
-
         .page-link {
             color: #9cdcfe;
         }
@@ -91,6 +100,7 @@
             border-color: #9cdcfe;
         }
     </style>
+    {{/if_eq}}
 </head>
 
 <body class="mb-3">
@@ -245,7 +255,6 @@
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.20/datatables.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/highlight.min.js"></script>
 
     <script>
         $(document).ready(function () {
@@ -253,7 +262,6 @@
                 order: [[2, 'asc']]
             });
         });
-        hljs.initHighlightingOnLoad();
     </script>
 </body>
 
