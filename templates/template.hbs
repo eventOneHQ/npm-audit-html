@@ -106,8 +106,8 @@
     <div class="container">
         <h1 class="mt-5 text-center">NPM Audit Report</h1>
 
-        <div class="text-center my-3">
-            <div class="card-deck">
+        <div class="text-center">
+            <div class="card-deck my-3">
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">
@@ -130,6 +130,58 @@
                             {{moment date "MMMM Do YYYY, h:mm:ss a"}}
                         </h5>
                         <p class="card-text">Last updated</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-deck my-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {{numeral metadata.vulnerabilities.critical "0,0"}}
+                        </h5>
+                        <p class="card-text">
+                            <span class="badge badge-{{severityClass 'critical'}}">critical</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {{numeral metadata.vulnerabilities.high "0,0"}}
+                        </h5>
+                        <p class="card-text">
+                            <span class="badge badge-{{severityClass 'high'}}">high</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {{numeral metadata.vulnerabilities.moderate "0,0"}}
+                        </h5>
+                        <p class="card-text">
+                            <span class="badge badge-{{severityClass 'moderate'}}">moderate</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {{numeral metadata.vulnerabilities.low "0,0"}}
+                        </h5>
+                        <p class="card-text">
+                            <span class="badge badge-{{severityClass 'low'}}">low</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {{numeral metadata.vulnerabilities.info "0,0"}}
+                        </h5>
+                        <p class="card-text">
+                            <span class="badge badge-{{severityClass 'info'}}">info</span>
+                        </p>
                     </div>
                 </div>
             </div>
