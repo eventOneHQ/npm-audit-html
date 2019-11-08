@@ -17,17 +17,40 @@
         .card {
             margin-bottom: 20px;
         }
+        .toggle:hover{
+            text-decoration: underline;
+        }
     </style>
+
+    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+  
 </head>
 
 <body>
     <div class="container">
         <div class="row">
             <div class="col-md text-center">
-                <h1>NPM Audit Report</h1>
-
-                <h2>{{metadata.vulnerabilities.total}} known vulnerabilities | {{metadata.totalDependencies}} dependencies |
-                    {{moment date "MMMM Do YYYY, h:mm:ss a"}}</h2>
+                <h1>NPM Audit Report - {{moment date "MMMM Do YYYY, h:mm:ss a"}}</h1>
+                  <div class="card">
+                      <!--Summary card-->ß
+                    <div class="card-body">
+                        <h1 class="card-title">
+                            Summary
+                        </h1>
+                        <h1 class="card-title">
+                            <span class="badge badge-danger toggle cursor:pointer;" data-toggle="tooltip" title="Click to show/hide">Critical</span>
+                            {{metadata.vulnerabilities.critical}}
+                            <span class="badge badge-warning toggle cursor:pointer;" data-toggle="tooltip" title="Click to show/hide">High</span>
+                            {{metadata.vulnerabilities.high}}
+                            <span class="badge badge-secondary toggle cursor:pointer;" data-toggle="tooltip" title="Click to show/hide">Moderate</span>
+                            {{metadata.vulnerabilities.moderate}}
+                            <span class="badge badge-primary toggle cursor:pointer;" data-toggle="tooltip" title="Click to show/hide">Low</span>
+                            {{metadata.vulnerabilities.low}}
+                            <span class="badge badge-info toggle cursor:pointer;" data-toggle="tooltip" title="Click to show/hide">Info</span>
+                            {{metadata.vulnerabilities.info}}
+                        </h1>
+                </div>
+                </div>
                 </p>
             </div>
         </div>
@@ -58,7 +81,7 @@
                                 <ul>
                                     <li>Vulnerable: {{vulnerable_versions}}</li>
                                     <li>Patched: {{patched_versions}}</li>
-                                    <li>CVSS: {{metadata.exploitability}}</li>
+                                    <li>Exploitability: {{metadata.exploitability}}</li>
                                 </ul>
                             </div>
                         </div>
@@ -93,6 +116,24 @@
             </div>{{/each}}
         </div>
     </div>
+
+<!--Script to toggle the vuls based on the click on the summary card -->
+  <script>
+    $( ".toggle" ).on('click', function() {
+        if($(this).hasClass( "badge-danger" )){
+            $('.badge-danger').closest('.col-md-12').toggle();
+        } else if($(this).hasClass( "badge-warning" )){
+            $('.badge-warning').closest('.col-md-12').toggle();
+        } else if($(this).hasClass( "badge-secondary" )){
+            $('.badge-secondary').closest('.col-md-12').toggle();
+        } else if($(this).hasClass( "badge-primary" )){
+            $('.badge-primary').closest('.col-md-12').toggle();
+        } else if($(this).hasClass( "badge-info" )){
+            $('.badge-info').closest('.col-md-12').toggle();
+        }
+    });
+    </script>
+
 </body>
 
 </html>
