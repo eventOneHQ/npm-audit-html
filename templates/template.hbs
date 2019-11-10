@@ -7,92 +7,313 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4"
-        crossorigin="anonymous">
+    <link rel="stylesheet"
+        href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css"
+        integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.20/datatables.min.css" />
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.16.2/build/styles/atom-one-dark.min.css">
 
     <title>NPM Audit Report</title>
     <meta name="description" content="{{metadata.vulnerabilities.total}} known vulnerabilities found.">
 
     <style>
-        .card {
-            margin-bottom: 20px;
+        pre {
+            background-color: #333333;
+            padding: 15px;
+        }
+
+        pre code {
+            color: #fff;
         }
     </style>
+
+    {{#if_eq theme 'dark'}}
+    <style>
+        body {
+            color: #fff;
+            background-color: #1e1e1e;
+        }
+
+        .card {
+            background-color: #252526;
+        }
+
+        .table thead th {
+            color: #fff
+        }
+
+        .modal-content {
+            background-color: #252526;
+        }
+
+        code {
+            color: #c586c0
+        }
+
+        a {
+            color: #9cdcfe;
+        }
+
+        a:hover {
+            color: #9cdcfe;
+            opacity: 0.667;
+
+        }
+
+        .close {
+            color: #fff;
+        }
+
+        .close:hover {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .table thead th {
+            border-bottom: 2px solid #444;
+        }
+
+        .table th,
+        .table td {
+            border-top: 1px solid #444;
+        }
+
+        .form-control {
+            background-color: #333333;
+            color: #fff;
+        }
+
+        .form-control:focus {
+            background-color: #333333;
+            color: #fff;
+        }
+
+        .page-link {
+            color: #9cdcfe;
+        }
+
+        .page-item.active .page-link {
+            color: #000;
+            background-color: #9cdcfe;
+            border-color: #9cdcfe;
+        }
+    </style>
+    {{/if_eq}}
 </head>
 
-<body>
+<body class="mb-3">
     <div class="container">
-        <div class="row">
-            <div class="col-md text-center">
-                <h1>NPM Audit Report</h1>
+        <h1 class="mt-5 text-center">NPM Audit Report</h1>
 
-                <h2>{{metadata.vulnerabilities.total}} known vulnerabilities | {{metadata.totalDependencies}} dependencies |
-                    {{moment date "MMMM Do YYYY, h:mm:ss a"}}</h2>
-                </p>
-            </div>
-        </div>
-        <div class="row">
-            {{#each advisories}}
-            <div class="col-md-12">
+        <div class="text-center">
+            <div class="card-deck my-3">
                 <div class="card">
                     <div class="card-body">
-                        <h1 class="card-title">
-                            <span class="badge badge-{{severityClass severity}}">{{severity}}</span>
-                            {{title}}
-                        </h1>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <ul>
-                                    <li>Module:
-                                        <a href="https://npmjs.com/package/{{module_name}}">{{module_name}}</a>
-                                    </li>
-                                    <li>Published: {{moment created "MMMM Do YYYY"}} </li>
-                                    <li>Reported by: {{reported_by.name}}</li>
-                                    <li>{{cwe}}</li>
-                                    {{#each cves}}
-                                    <li>{{this}}</li>
-                                    {{/each}}
-                                </ul>
-                            </div>
-                            <div class="col-md-6">
-                                <ul>
-                                    <li>Vulnerable: {{vulnerable_versions}}</li>
-                                    <li>Patched: {{patched_versions}}</li>
-                                    <li>CVSS: {{metadata.exploitability}}</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <h3>Overview</h3>
-                        <p class="card-text">{{{markdown overview}}}</p>
-
-                        <h3>Findings</h3>
-						{{#each findings}}							
-							<ul>
-							{{#each paths}}
-								<li>{{this}} </li>
-							{{/each}}
-							</ul>
-						{{/each}}
-
-                        {{#if recommendation}}
-                        <h3>Remediation</h3>
-                        <p class="card-text">{{{markdown recommendation}}}</p>
-                        {{/if}} {{#if references}}
-                        <h3>References</h3>
-                        <p class="card-text">{{{markdown references}}}</p>
-                        {{/if}} {{#if action}}
-                        <h3>Action</h3>
-                        <p class="card-text">
-                            <code>npm {{action.action}} {{action.module}} {{#if action.depth}}--depth={{action.depth}}{{/if}}</code>
-                        </p>
-                        {{/if}}
-
-                        <a href="{{url}}" class="btn btn-primary">More about this vulnerability</a>
+                        <h5 class="card-title">
+                            {{numeral metadata.vulnerabilities.total "0,0"}}
+                        </h5>
+                        <p class="card-text">Known vulnerabilities</p>
                     </div>
                 </div>
-            </div>{{/each}}
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {{numeral metadata.totalDependencies "0,0"}}
+                        </h5>
+                        <p class="card-text">Dependencies</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {{moment date "MMMM Do YYYY, h:mm:ss a"}}
+                        </h5>
+                        <p class="card-text">Last updated</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-deck my-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {{numeral metadata.vulnerabilities.critical "0,0"}}
+                        </h5>
+                        <p class="card-text">
+                            <span class="badge badge-{{severityClass 'critical'}}">critical</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {{numeral metadata.vulnerabilities.high "0,0"}}
+                        </h5>
+                        <p class="card-text">
+                            <span class="badge badge-{{severityClass 'high'}}">high</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {{numeral metadata.vulnerabilities.moderate "0,0"}}
+                        </h5>
+                        <p class="card-text">
+                            <span class="badge badge-{{severityClass 'moderate'}}">moderate</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {{numeral metadata.vulnerabilities.low "0,0"}}
+                        </h5>
+                        <p class="card-text">
+                            <span class="badge badge-{{severityClass 'low'}}">low</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            {{numeral metadata.vulnerabilities.info "0,0"}}
+                        </h5>
+                        <p class="card-text">
+                            <span class="badge badge-{{severityClass 'info'}}">info</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+
+                <table id="advisories" class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Name</th>
+                            <th scope="col">Module</th>
+                            <th scope="col">Severity</th>
+                            <th scope="col">CVEs</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each advisories}}
+                        <tr>
+                            <th scope="row">
+                                <a href="{{url}}" data-toggle="modal" data-target="#advisory-modal-{{id}}">{{title}}</a>
+                            </th>
+                            <td>
+                                <a href="https://npmjs.com/package/{{module_name}}" target="_blank"
+                                    rel="noopener">{{module_name}}</a>
+                            </td>
+                            <td data-order="{{severityNumber severity}}"><span
+                                    class="badge badge-{{severityClass severity}}">{{severity}}</span></td>
+                            <td>
+                                {{cwe}}
+                                {{#each cves}}
+                                , {{this}}
+                                {{/each}}
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
+
+
+    {{#each advisories}}
+    <div class="modal" tabindex="-1" role="dialog" id="advisory-modal-{{id}}">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span class="badge badge-{{severityClass severity}}">{{severity}}</span>
+                        {{title}}
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Module:
+                                    <a href="https://npmjs.com/package/{{module_name}}" target="_blank"
+                                        rel="noopener">{{module_name}}</a>
+                                </li>
+                                <li>Published: {{moment created "MMMM Do YYYY"}} </li>
+                                <li>Reported by: {{reported_by.name}}</li>
+                                <li>{{cwe}}</li>
+                                {{#each cves}}
+                                <li>{{this}}</li>
+                                {{/each}}
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul>
+                                <li>Vulnerable: {{vulnerable_versions}}</li>
+                                <li>Patched: {{patched_versions}}</li>
+                                <li>Exploitability: {{metadata.exploitability}}</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <h3>Overview</h3>
+                    <p class="card-text">{{{markdown overview}}}</p>
+
+                    <h3>Findings</h3>
+                    {{#each findings}}
+                    <ul>
+                        {{#each paths}}
+                        <li>{{this}} </li>
+                        {{/each}}
+                    </ul>
+                    {{/each}}
+
+                    {{#if recommendation}}
+                    <h3>Remediation</h3>
+                    <p class="card-text">{{{markdown recommendation}}}</p>
+                    {{/if}} {{#if references}}
+                    <h3>References</h3>
+                    <p class="card-text">{{{markdown references}}}</p>
+                    {{/if}} {{#if action}}
+                    <h3>Action</h3>
+                    <p class="card-text">
+                        <code>npm {{action.action}} {{action.module}} {{#if action.depth}}--depth={{action.depth}}{{/if}}</code>
+                    </p>
+                    {{/if}}
+
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-raised mr-2 btn-primary" href="{{url}}" target="_blank" rel="noopener">More about
+                        this vulnerability</a>
+                    <button type="button" class="btn btn-raised btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{/each}}
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.20/datatables.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#advisories').DataTable({
+                order: [[2, 'asc']]
+            });
+        });
+    </script>
 </body>
 
 </html>
