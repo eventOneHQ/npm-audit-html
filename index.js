@@ -15,6 +15,10 @@ program
   .version(pkg.version)
   .option('-o, --output [output]', 'output file')
   .option('-i, --input [input]', 'input file')
+  .option(
+    '-c, --theme [theme name]',
+    'template theme `dark` or `light` (defaults to `light`)'
+  )
   .option('-t, --template [handlebars file]', 'handlebars template file')
   .action(async (cmd, env) => {
     try {
@@ -28,14 +32,19 @@ program
         return process.exit(1)
       }
 
-      await genReport(data, cmd.output, cmd.template)
+      await genReport(data, cmd.output, cmd.template, cmd.theme)
     } catch (err) {
       console.error('Failed to parse NPM Audit JSON!')
       return process.exit(1)
     }
   })
 
-const genReport = async (data, output = 'npm-audit.html', template) => {
+const genReport = async (
+  data,
+  output = 'npm-audit.html',
+  template,
+  theme = 'light'
+) => {
   try {
     if (!data) {
       console.log('No JSON')
@@ -44,7 +53,7 @@ const genReport = async (data, output = 'npm-audit.html', template) => {
 
     const templateFile = template || `${__dirname}/templates/template.hbs`
 
-    await reporter(data, templateFile, output)
+    await reporter(data, templateFile, output, theme)
 
     console.log(`Vulnerability snapshot saved at ${output}`)
     process.exit(0)
