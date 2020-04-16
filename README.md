@@ -43,6 +43,12 @@ If you want to specify the output file, add the `--output` option:
 npm audit --json | npm-audit-html --output report.html
 ```
 
+You can also fully customize the generated report by providing `--template` option followed by your own handlebars template: 
+
+```bash
+npm audit --json | npm-audit-html --template ./my-awesome-template.hbs
+```
+
 ## ✍️ Authors <a name = "authors"></a>
 
 - [@nprail](https://github.com/nprail) - Maintainer
