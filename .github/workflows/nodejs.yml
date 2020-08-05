@@ -1,14 +1,17 @@
 name: Node CI
 
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - '**'
+on: [pull_request, push]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - run: npm ci
+      - run: npm run lint
   test:
     name: Node v${{ matrix.node-version }} on ${{ matrix.os }}
     strategy:
@@ -25,6 +28,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: install
-        run: npm install
+        run: npm ci
       - name: run tests
         run: npm run test-ci
