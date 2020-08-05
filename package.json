@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "npm run lint && npm run audit-report && npm audit",
+    "test-ci": "cd test; npm i && npm audit --json | node ../index.js",
     "lint": "eslint '*.js' 'lib/**/*.js'",
     "lint:fix": "eslint '*.js' 'lib/**/*.js' --fix",
     "lint!": "npm run format && npm run lint:fix",
