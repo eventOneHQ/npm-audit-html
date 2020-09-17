@@ -53,9 +53,14 @@ const genReport = async (
 
     const templateFile = template || `${__dirname}/templates/template.hbs`
 
-    await reporter(data, templateFile, output, theme)
+    const modifiedData = await reporter(data, templateFile, output, theme)
+    if (modifiedData.metadata.vulnerabilities.total > 0) {
+      console.log(`Vulnerability snapshot saved at ${output}`)
+      process.exit(1)
+    }
 
-    console.log(`Vulnerability snapshot saved at ${output}`)
+    console.log('No vulnerabilities found')
+    console.log(`Vulnerability snapshot save at ${output}`)
     process.exit(0)
   } catch (err) {
     console.log('An error occurred!')
