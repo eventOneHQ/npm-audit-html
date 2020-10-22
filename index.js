@@ -23,6 +23,7 @@ program
     'template theme `dark` or `light` (defaults to `light`)'
   )
   .option('-t, --template [handlebars file]', 'handlebars template file')
+  .option('-f, --fatal-exit-code', 'exit with code 1 if vulnerabilities were found')
   .action(async (cmd, env) => {
     try {
       let data
@@ -35,7 +36,7 @@ program
         return process.exit(1)
       }
 
-      await genReport(data, cmd.output, cmd.template, cmd.theme, cmd.open)
+      await genReport(data, cmd.output, cmd.template, cmd.theme, cmd.open, cmd.fatalExitCode)
     } catch (err) {
       console.error('Failed to parse NPM Audit JSON!')
       return process.exit(1)
@@ -47,7 +48,8 @@ const genReport = async (
   output = 'npm-audit.html',
   template,
   theme = 'light',
-  openBrowser = false
+  openBrowser = false,
+  fatalExitCode = false
 ) => {
   try {
     if (!data) {
@@ -55,9 +57,13 @@ const genReport = async (
       return process.exit(1)
     }
 
-    const templateFile = template || `${__dirname}/templates/template.hbs`
+    const templateFile = template || path.join(__dirname, '/templates/template.hbs')
 
-    await reporter(data, templateFile, output, theme)
+    const modifiedData = await reporter(data, templateFile, output, theme)
+
+    if (modifiedData.metadata.vulnerabilities.total > 0 && fatalExitCode) {
+      process.exitCode = 1
+    }
 
     console.log(`Vulnerability snapshot saved at ${output}`)
 
