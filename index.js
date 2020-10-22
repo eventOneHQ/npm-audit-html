@@ -3,6 +3,7 @@
 const program = require('commander')
 const updateNotifier = require('update-notifier')
 const fs = require('fs-extra')
+const path = require('path')
 
 const reporter = require('./lib/reporter')
 const pkg = require('./package.json')
@@ -51,7 +52,7 @@ const genReport = async (
       return process.exit(1)
     }
 
-    const templateFile = template || `${__dirname}/templates/template.hbs`
+    const templateFile = template || path.join(__dirname, '/templates/template.hbs')
 
     await reporter(data, templateFile, output, theme)
 
