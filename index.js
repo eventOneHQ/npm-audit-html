@@ -21,7 +21,7 @@ program
     'template theme `dark` or `light` (defaults to `light`)'
   )
   .option('-t, --template [handlebars file]', 'handlebars template file')
-  .option('--fatal-exit-code', 'exit with code 1 if vulnerabilities were found')
+  .option('-f, --fatal-exit-code', 'exit with code 1 if vulnerabilities were found')
   .action(async (cmd, env) => {
     try {
       let data
@@ -57,17 +57,12 @@ const genReport = async (
     const templateFile = template || path.join(__dirname, '/templates/template.hbs')
 
     const modifiedData = await reporter(data, templateFile, output, theme)
-    if (modifiedData.metadata.vulnerabilities.total > 0) {
-      console.log(`Vulnerability snapshot saved at ${output}`)
-      if (fatalExitCode) {
-        process.exit(1)
-      }
-      process.exit(0)
+
+    if (modifiedData.metadata.vulnerabilities.total > 0 && fatalExitCode) {
+      process.exitCode = 1
     }
 
-    console.log('No vulnerabilities found')
-    console.log(`Vulnerability snapshot save at ${output}`)
-    process.exit(0)
+    console.log(`Vulnerability snapshot saved at ${output}`)
   } catch (err) {
     console.log('An error occurred!')
     console.log(err)
