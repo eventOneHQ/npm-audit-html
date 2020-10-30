@@ -3,6 +3,7 @@
 const program = require('commander')
 const updateNotifier = require('update-notifier')
 const fs = require('fs-extra')
+const open = require('open')
 const path = require('path')
 
 const reporter = require('./lib/reporter')
@@ -16,6 +17,7 @@ program
   .version(pkg.version)
   .option('-o, --output [output]', 'output file')
   .option('-i, --input [input]', 'input file')
+  .option('-O, --open', 'open report in default browser automatically')
   .option(
     '-c, --theme [theme name]',
     'template theme `dark` or `light` (defaults to `light`)'
@@ -34,7 +36,7 @@ program
         return process.exit(1)
       }
 
-      await genReport(data, cmd.output, cmd.template, cmd.theme, cmd.fatalExitCode)
+      await genReport(data, cmd.output, cmd.template, cmd.theme, cmd.open, cmd.fatalExitCode)
     } catch (err) {
       console.error('Failed to parse NPM Audit JSON!')
       return process.exit(1)
@@ -46,6 +48,7 @@ const genReport = async (
   output = 'npm-audit.html',
   template,
   theme = 'light',
+  openBrowser = false,
   fatalExitCode = false
 ) => {
   try {
@@ -63,6 +66,11 @@ const genReport = async (
     }
 
     console.log(`Vulnerability snapshot saved at ${output}`)
+
+    if (openBrowser) {
+      console.log('Opening report in default browser...')
+      await open(path.resolve(output))
+    }
   } catch (err) {
     console.log('An error occurred!')
     console.log(err)
