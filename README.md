@@ -49,6 +49,11 @@ You can also fully customize the generated report by providing `--template` opti
 npm audit --json | npm-audit-html --template ./my-awesome-template.hbs
 ```
 
+If you'd like the generator to exit with non-zero exit code when vulnerabilities are found, you can add the `--fatal-exit-code` option:
+```bash
+npm audit --json | npm-audit-html --fatal-exit-code
+```
+
 ## ✍️ Authors <a name = "authors"></a>
 
 - [@nprail](https://github.com/nprail) - Maintainer
