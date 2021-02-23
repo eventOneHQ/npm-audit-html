@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "npm run lint && npm run audit-report && npm audit",
-    "build": "tsc",
+    "build": "tsc --build tsconfig.json",
     "watch": "tsc --watch",
     "prepublishOnly": "npm run build",
     "test-ci": "cd test; npm i && npm audit --json | node ../dist/src/index.js",
