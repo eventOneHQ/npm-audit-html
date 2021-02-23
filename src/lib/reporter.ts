@@ -1,13 +1,18 @@
-const terminalLink = require('terminal-link')
-const Handlebars = require('handlebars')
-const moment = require('moment')
-const marked = require('marked')
-const fs = require('fs-extra')
-const chalk = require('chalk')
-const numeral = require('numeral')
-const highlight = require('highlight.js')
+import terminalLink from 'terminal-link'
+import Handlebars from 'handlebars'
+import moment from 'moment'
+import marked from 'marked'
+import fs from 'fs-extra'
+import chalk from 'chalk'
+import numeral from 'numeral'
+import highlight from 'highlight.js'
 
-const severityMap = {
+const severityMap: {
+  [key: string]: {
+    color: string
+    number: number
+  }
+} = {
   info: {
     color: 'info',
     number: 5
@@ -30,12 +35,12 @@ const severityMap = {
   }
 }
 
-const generateTemplate = async (data, template) => {
+const generateTemplate = async (data: any, template: string) => {
   const htmlTemplate = await fs.readFile(template, 'utf8')
   return Handlebars.compile(htmlTemplate)(data)
 }
 
-const writeReport = async (report, output) => {
+const writeReport = async (report, output: string) => {
   await fs.ensureFile(output)
   await fs.writeFile(output, report)
 }
@@ -60,7 +65,12 @@ const modifyData = async data => {
   return data
 }
 
-module.exports = async (data, templateFile, outputFile, theme) => {
+export const reporter = async (
+  data: any,
+  templateFile: string,
+  outputFile: string,
+  theme: string
+): Promise<any> => {
   try {
     if (!data.metadata) {
       if (data.updated) {
@@ -114,17 +124,17 @@ Handlebars.registerHelper('if_eq', (a, b, opts) => {
 
 Handlebars.registerHelper(
   'severityClass',
-  severity => severityMap[severity].color
+  (severity: string) => severityMap[severity].color
 )
 
 Handlebars.registerHelper(
   'severityNumber',
-  severity => severityMap[severity].number
+  (severity: string) => severityMap[severity].number
 )
 
 Handlebars.registerHelper('markdown', source =>
   marked(source, {
-    highlight: code => {
+    highlight: (code: string) => {
       return highlight.highlightAuto(code).value
     },
     gfm: true

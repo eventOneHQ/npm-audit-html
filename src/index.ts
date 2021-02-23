@@ -1,17 +1,19 @@
 #!/usr/bin/env node
+import { Command } from 'commander'
+import updateNotifier from 'update-notifier'
 
-const program = require('commander')
-const updateNotifier = require('update-notifier')
-const fs = require('fs-extra')
-const open = require('open')
-const path = require('path')
+import fs from 'fs-extra'
+import open from 'open'
+import path from 'path'
 
-const reporter = require('./lib/reporter')
-const pkg = require('./package.json')
+import { reporter } from './lib/reporter'
+import pkg from '../package.json'
 
 updateNotifier({ pkg }).notify()
 
 let stdin = ''
+
+const program = new Command()
 
 program
   .version(pkg.version)
@@ -23,8 +25,11 @@ program
     'template theme `dark` or `light` (defaults to `light`)'
   )
   .option('-t, --template [handlebars file]', 'handlebars template file')
-  .option('-f, --fatal-exit-code', 'exit with code 1 if vulnerabilities were found')
-  .action(async (cmd, env) => {
+  .option(
+    '-f, --fatal-exit-code',
+    'exit with code 1 if vulnerabilities were found'
+  )
+  .action(async cmd => {
     try {
       let data
       if (cmd.input) {
@@ -36,7 +41,14 @@ program
         return process.exit(1)
       }
 
-      await genReport(data, cmd.output, cmd.template, cmd.theme, cmd.open, cmd.fatalExitCode)
+      await genReport(
+        data,
+        cmd.output,
+        cmd.template,
+        cmd.theme,
+        cmd.open,
+        cmd.fatalExitCode
+      )
     } catch (err) {
       console.error('Failed to parse NPM Audit JSON!')
       return process.exit(1)
@@ -44,9 +56,9 @@ program
   })
 
 const genReport = async (
-  data,
+  data: any,
   output = 'npm-audit.html',
-  template,
+  template: string,
   theme = 'light',
   openBrowser = false,
   fatalExitCode = false
@@ -57,7 +69,8 @@ const genReport = async (
       return process.exit(1)
     }
 
-    const templateFile = template || path.join(__dirname, '/templates/template.hbs')
+    const templateFile =
+      template || path.join(__dirname, '../../src/templates/template.hbs')
 
     const modifiedData = await reporter(data, templateFile, output, theme)
 
