@@ -35,6 +35,31 @@ const severityMap: {
   }
 }
 
+export interface ReportOverview {
+  totalVulnerabilities: number
+  totalDependencies: number
+  critical: number
+  high: number
+  moderate: number
+  low: number
+  info: number
+}
+export interface Report {
+  createdAt: Date
+  overview: ReportOverview
+  advisories: any[]
+}
+
+export interface Reporter {
+  transformReport(data: any): Promise<Report>
+}
+
+export class NpmAuditReportVersion1 implements Reporter {
+  async transformReport(data: any): Promise<Report> {
+    return
+  }
+}
+
 const generateTemplate = async (data: any, template: string) => {
   const htmlTemplate = await fs.readFile(template, 'utf8')
   return Handlebars.compile(htmlTemplate)(data)
@@ -48,10 +73,10 @@ const writeReport = async (report, output: string) => {
 const modifyData = async data => {
   const vulnerabilities = data.metadata.vulnerabilities || []
 
-  //   for (const act in data.actions) {
-  //     const action = data.actions[act]
-  //     console.log(action)
-  //   }
+  // for (const act in data.actions) {
+  //   const action = data.actions[act]
+  //   console.log(action)
+  // }
 
   // calculate totals
   let total = 0
@@ -65,12 +90,19 @@ const modifyData = async data => {
   return data
 }
 
-export const reporter = async (
-  data: any,
-  templateFile: string,
-  outputFile: string,
+export interface GenerateReportOptions {
+  data: any
+  templateFile: string
+  outputFile: string
   theme: string
-): Promise<any> => {
+}
+
+export const generateReport = async ({
+  data,
+  templateFile,
+  outputFile,
+  theme
+}: GenerateReportOptions): Promise<any> => {
   try {
     if (!data.metadata) {
       if (data.updated) {

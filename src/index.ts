@@ -6,7 +6,7 @@ import fs from 'fs-extra'
 import open from 'open'
 import path from 'path'
 
-import { reporter } from './lib/reporter'
+import { generateReport } from './lib/reporter'
 import pkg from '../package.json'
 
 updateNotifier({ pkg }).notify()
@@ -57,7 +57,7 @@ program
 
 const genReport = async (
   data: any,
-  output = 'npm-audit.html',
+  outputFile = 'npm-audit.html',
   template: string,
   theme = 'light',
   openBrowser = false,
@@ -72,17 +72,17 @@ const genReport = async (
     const templateFile =
       template || path.join(__dirname, '../../src/templates/template.hbs')
 
-    const modifiedData = await reporter(data, templateFile, output, theme)
+    const modifiedData = await generateReport({ data, templateFile, outputFile, theme })
 
     if (modifiedData.metadata.vulnerabilities.total > 0 && fatalExitCode) {
       process.exitCode = 1
     }
 
-    console.log(`Vulnerability snapshot saved at ${output}`)
+    console.log(`Vulnerability snapshot saved at ${outputFile}`)
 
     if (openBrowser) {
       console.log('Opening report in default browser...')
-      await open(path.resolve(output))
+      await open(path.resolve(outputFile))
     }
   } catch (err) {
     console.log('An error occurred!')
