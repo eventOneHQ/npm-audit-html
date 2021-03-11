@@ -11,6 +11,8 @@
 </p>
 <p align="center"><b>Generate a HTML report for NPM Audit</b></p>
 
+![screenshot of generated report](/screenshots/report.jpeg)
+
 ## 📝 Table of Contents
 
 - [Getting Started](#getting_started)
