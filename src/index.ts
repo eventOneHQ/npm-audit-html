@@ -31,12 +31,15 @@ program
   )
   .action(async cmd => {
     try {
-      let data
+      let data: string
       if (cmd.input) {
-        data = await fs.readJson(cmd.input)
+        const file = await fs.readFile(cmd.input)
+        data = file.toString('utf-8')
       } else if (stdin) {
-        data = JSON.parse(stdin)
-      } else {
+        data = stdin
+      }
+
+      if (!data) {
         console.log('No input')
         return process.exit(1)
       }
@@ -69,12 +72,21 @@ const genReport = async (
       return process.exit(1)
     }
 
-    const templateFile =
-      template || path.join(__dirname, '../../src/templates/template.hbs')
+    const defaultTemplate = path.resolve(
+      __dirname,
+      '../../templates/template.hbs'
+    )
 
-    const modifiedData = await generateReport({ data, templateFile, outputFile, theme })
+    const templateFile = template || defaultTemplate
 
-    if (modifiedData.metadata.vulnerabilities.total > 0 && fatalExitCode) {
+    const modifiedData = await generateReport({
+      data,
+      templateFile,
+      outputFile,
+      theme
+    })
+
+    if (fatalExitCode && modifiedData?.metadata?.vulnerabilities?.total > 0) {
       process.exitCode = 1
     }
 
