@@ -2,23 +2,24 @@
   "name": "npm-audit-html",
   "version": "0.0.0-development",
   "description": "Generate a HTML report for NPM Audit",
-  "main": "dist/src/index.js",
-  "bin": "dist/src/index.js",
+  "main": "dist/src/lib/reporter.js",
+  "bin": "dist/src/cli.js",
   "scripts": {
     "test": "npm run lint && npm run audit-report && npm audit",
     "build": "tsc",
     "watch": "tsc --watch",
     "prepublishOnly": "npm run build",
-    "test-ci": "cd test; npm -v && npm i && npm audit --json | node ../dist/src/index.js",
+    "test-ci": "cd test; npm -v && npm i && npm audit --json | node ../dist/src/cli.js",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "lint!": "npm run format && npm run lint:fix",
     "format": "prettier --write '**/*.ts' 'src/**/*.ts'",
-    "audit-report": "npm audit --json | node dist/src/index.js -o tests/npm-audit.html",
+    "audit-report": "npm audit --json | node dist/src/cli.js -o tests/npm-audit.html",
     "cm": "git-cz",
     "pre-commit": "lint-staged",
     "semantic-release": "semantic-release",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "docs": "npx typedoc --excludeExternals --out docs src/index.ts"
   },
   "author": "eventOne Labs <opensource@event1.io>",
   "repository": "eventOneHQ/npm-audit-html",
@@ -42,6 +43,7 @@
     "lint-staged": "^11.2.3",
     "prettier": "^2.2.1",
     "semantic-release": "^18.0.0",
+    "typedoc": "^0.22.5",
     "typescript": "^4.4.3"
   },
   "dependencies": {

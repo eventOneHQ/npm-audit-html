@@ -1,10 +1,9 @@
 export interface GenerateReportOptions {
-  data: string
-  templateFile: string
-  outputFile: string
-  theme: string
+  auditJson: string
+  templateFile?: string
+  outputFile?: string
+  theme?: 'light' | 'dark'
 }
-
 export interface ReportOverview {
   totalVulnerabilities: number
   totalDependencies: number
@@ -40,12 +39,20 @@ export interface Report {
   vulnerabilities: ReportVulnerabilityModule[]
 }
 
+export interface GeneratedReport {
+  outputFile: string
+  report: Report
+}
+
 export interface Reporter {
   type: string
   transformReport(data: string): Promise<Report>
   isType(data: string): Promise<boolean>
 }
 
+/**
+ * @ignore
+ */
 export const severityMap: {
   [key: string]: {
     color: string

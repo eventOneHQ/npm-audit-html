@@ -1,12 +1,18 @@
 import Handlebars from 'handlebars'
 import moment from 'moment'
 import fs from 'fs-extra'
-import chalk from 'chalk'
 import numeral from 'numeral'
+import path from 'path'
 
 import { NpmAuditReportVersion2 } from './../reporters/npm-v2'
 import { NpmAuditReportVersion1 } from './../reporters/npm-v1'
-import { GenerateReportOptions, Reporter, severityMap } from './types'
+import {
+  GenerateReportOptions,
+  Reporter,
+  severityMap,
+  GeneratedReport,
+  Report
+} from './types'
 
 const generateTemplate = async (data: any, template: string) => {
   const htmlTemplate = await fs.readFile(template, 'utf8')
@@ -23,53 +29,51 @@ const reporters: Reporter[] = [
   new NpmAuditReportVersion2()
 ]
 
-const throwError = (message: string) => {
-  console.log(chalk.red(message))
-  process.exit(1)
-}
-
+/**
+ * Generate an HTML report for npm audit
+ *
+ * @param config Configuration for generating the report
+ * @returns
+ */
 export const generateReport = async ({
-  data,
-  templateFile,
-  outputFile,
-  theme
-}: GenerateReportOptions): Promise<any> => {
-  try {
-    let reporter: Reporter
-    for (const r of reporters) {
-      const isType = await r.isType(data)
+  auditJson,
+  templateFile = path.resolve(__dirname, '../../../templates/template.hbs'),
+  outputFile = 'npm-audit.html',
+  theme = 'light'
+}: GenerateReportOptions): Promise<GeneratedReport> => {
+  let reporter: Reporter
+  for (const r of reporters) {
+    const isType = await r.isType(auditJson)
 
-      if (isType) {
-        reporter = r
-      }
+    if (isType) {
+      reporter = r
     }
+  }
 
-    if (!reporter) {
-      console.log(
-        chalk.red(
-          `The provided data doesn't seem to be correct. Did you run with ${chalk.underline(
-            'npm audit --json'
-          )}?`
-        )
-      )
-      process.exit(1)
-    }
+  if (!reporter) {
+    throw new Error(
+      "The provided data doesn't seem to be correct. Did you run with `npm audit --json`?"
+    )
+  }
 
-    console.log(`Transforming with ${reporter.type} reporter`)
-    const modifiedData: any = await reporter.transformReport(data)
+  const reportData: Report = await reporter.transformReport(auditJson)
 
-    if (!modifiedData) {
-      return throwError('Something went wrong while generating the report.')
-    }
+  if (!reportData) {
+    throw new Error('Something went wrong while generating the report.')
+  }
 
-    modifiedData.date = new Date()
-    modifiedData.theme = theme
-    const report = await generateTemplate(modifiedData, templateFile)
-    await writeReport(report, outputFile)
+  const report = await generateTemplate(
+    {
+      ...reportData,
+      theme
+    },
+    templateFile
+  )
+  await writeReport(report, path.resolve(outputFile))
 
-    return modifiedData
-  } catch (err) {
-    return throwError(err)
+  return {
+    report: reportData,
+    outputFile: path.resolve(outputFile)
   }
 }
 
