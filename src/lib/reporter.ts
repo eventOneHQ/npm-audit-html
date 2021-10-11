@@ -1,10 +1,8 @@
 import Handlebars from 'handlebars'
 import moment from 'moment'
-import marked from 'marked'
 import fs from 'fs-extra'
 import chalk from 'chalk'
 import numeral from 'numeral'
-import highlight from 'highlight.js'
 
 import { NpmAuditReportVersion2 } from './../reporters/npm-v2'
 import { NpmAuditReportVersion1 } from './../reporters/npm-v1'
@@ -99,13 +97,4 @@ Handlebars.registerHelper(
 Handlebars.registerHelper(
   'severityNumber',
   (severity: string) => severityMap[severity]?.number
-)
-
-Handlebars.registerHelper('markdown', source =>
-  marked(source, {
-    highlight: (code: string) => {
-      return highlight.highlightAuto(code).value
-    },
-    gfm: true
-  })
 )

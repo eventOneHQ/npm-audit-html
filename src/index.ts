@@ -103,6 +103,10 @@ const genReport = async (
   }
 }
 
+if (process.argv.length === 2) {
+  program.help()
+}
+
 if (process.stdin.isTTY) {
   program.parse(process.argv)
 } else {
