@@ -102,3 +102,7 @@ Handlebars.registerHelper(
   'severityNumber',
   (severity: string) => severityMap[severity]?.number
 )
+
+Handlebars.registerHelper('nameHandler', input => {
+  return input.replace('@', '').replace('/', '-')
+})

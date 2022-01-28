@@ -208,7 +208,7 @@
                                     class="badge badge-{{severityClass severity}}">{{severity}}</span></td>
                             <td>
                                 <a href="{{url}}" data-toggle="modal"
-                                    data-target="#advisory-modal-{{name}}">{{via.length}}</a>
+                                    data-target="#advisory-modal-{{nameHandler name}}">{{via.length}}</a>
                             </td>
                         </tr>
                         {{/each}}
@@ -220,7 +220,7 @@
 
 
     {{#each vulnerabilities}}
-    <div class="modal" tabindex="-1" role="dialog" id="advisory-modal-{{name}}">
+    <div class="modal" tabindex="-1" role="dialog" id="advisory-modal-{{nameHandler name}}">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -242,7 +242,7 @@
                         </li>
                         {{else}}
                         <li>
-                            <a href="{{url}}" data-toggle="modal" data-target="#advisory-modal-{{this}}"
+                            <a href="{{url}}" data-toggle="modal" data-target="#advisory-modal-{{nameHandler this}}"
                                 data-dismiss="modal">{{this}}</a>
                         </li>
                         {{/if}}
