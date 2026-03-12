@@ -31,3 +31,10 @@ jobs:
         run: npm ci
       - name: run tests
         run: npm run test-ci
+      - name: upload report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report-node${{ matrix.node-version }}-${{ matrix.os }}
+          path: test/npm-audit.html
+          if-no-files-found: warn
