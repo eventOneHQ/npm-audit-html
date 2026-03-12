@@ -33,7 +33,7 @@
                 <div class="text-gray-500 dark:text-gray-400 text-sm mt-1">Known vulnerabilities</div>
             </div>
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
-                <div class="text-2xl font-bold">{{numeral metadata.totalDependencies "0,0"}}</div>
+                <div class="text-2xl font-bold">{{numeral metadata.dependencies.total "0,0"}}</div>
                 <div class="text-gray-500 dark:text-gray-400 text-sm mt-1">Dependencies</div>
             </div>
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
@@ -82,7 +82,7 @@
                 class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
 
-        <!-- Advisories table -->
+        <!-- Vulnerabilities table -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-x-auto">
             <table id="advisories" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="bg-gray-50 dark:bg-gray-700">
@@ -101,22 +101,22 @@
                         </th>
                         <th scope="col"
                             class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            CVEs
+                            CWEs
                         </th>
                     </tr>
                 </thead>
                 <tbody id="advisories-body" class="divide-y divide-gray-200 dark:divide-gray-700">
-                    {{#each advisories}}
+                    {{#each vulnerabilities}}
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                        onclick="openModal('advisory-modal-{{id}}')">
+                        onclick="openModal('vuln-modal-{{safeDomId name}}')">
                         <td class="px-6 py-4 text-sm font-medium max-w-xs">
-                            <a href="#" onclick="event.stopPropagation(); openModal('advisory-modal-{{id}}')"
-                                class="text-blue-600 dark:text-blue-400 hover:underline">{{title}}</a>
+                            <a href="#" onclick="event.stopPropagation(); openModal('vuln-modal-{{safeDomId name}}')"
+                                class="text-blue-600 dark:text-blue-400 hover:underline">{{_firstAdvisory.title}}</a>
                         </td>
                         <td class="px-6 py-4 text-sm whitespace-nowrap">
-                            <a href="https://npmjs.com/package/{{module_name}}" target="_blank" rel="noopener"
+                            <a href="https://npmjs.com/package/{{name}}" target="_blank" rel="noopener"
                                 onclick="event.stopPropagation()"
-                                class="text-blue-600 dark:text-blue-400 hover:underline">{{module_name}}</a>
+                                class="text-blue-600 dark:text-blue-400 hover:underline">{{name}}</a>
                         </td>
                         <td class="px-6 py-4 text-sm whitespace-nowrap"
                             data-severity-order="{{severityNumber severity}}">
@@ -124,7 +124,7 @@
                                 class="inline-block px-2 py-0.5 rounded text-xs font-semibold {{severityBadgeClass severity}}">{{severity}}</span>
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                            {{cwe}}{{#each cves}}, {{this}}{{/each}}
+                            {{#each _firstAdvisory.cwe}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
                         </td>
                     </tr>
                     {{/each}}
@@ -133,73 +133,68 @@
         </div>
     </div>
 
-    <!-- Advisory modals -->
-    {{#each advisories}}
-    <dialog id="advisory-modal-{{id}}"
+    <!-- Vulnerability modals -->
+    {{#each vulnerabilities}}
+    <dialog id="vuln-modal-{{safeDomId name}}"
         class="bg-white dark:bg-gray-800 dark:text-gray-100 rounded-lg shadow-xl max-w-3xl w-full mx-auto p-0 backdrop:bg-black/50">
         <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
             <h5 class="text-base font-semibold flex items-center gap-2 pr-4">
                 <span
                     class="inline-block px-2 py-0.5 rounded text-xs font-semibold shrink-0 {{severityBadgeClass severity}}">{{severity}}</span>
-                {{title}}
+                {{_firstAdvisory.title}}
             </h5>
-            <button onclick="closeModal('advisory-modal-{{id}}')"
+            <button onclick="closeModal('vuln-modal-{{safeDomId name}}')"
                 class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-2xl leading-none shrink-0"
                 aria-label="Close">&times;</button>
         </div>
         <div class="p-4 overflow-y-auto max-h-[70vh]">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 text-sm">
                 <ul class="space-y-1">
-                    <li>Module: <a href="https://npmjs.com/package/{{module_name}}" target="_blank" rel="noopener"
-                            class="text-blue-600 dark:text-blue-400 hover:underline">{{module_name}}</a></li>
-                    {{#if created}}<li>Published: {{moment created "MMMM Do YYYY"}}</li>{{/if}}
-                    {{#if reported_by.name}}<li>Reported by: {{reported_by.name}}</li>{{/if}}
-                    {{#if cwe}}<li>{{cwe}}</li>{{/if}}
-                    {{#each cves}}<li>{{this}}</li>{{/each}}
+                    <li>Module: <a href="https://npmjs.com/package/{{name}}" target="_blank" rel="noopener"
+                            class="text-blue-600 dark:text-blue-400 hover:underline">{{name}}</a></li>
+                    {{#if _firstAdvisory.cwe}}
+                    <li>{{#each _firstAdvisory.cwe}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</li>
+                    {{/if}}
                 </ul>
                 <ul class="space-y-1">
-                    {{#if vulnerable_versions}}<li>Vulnerable: {{vulnerable_versions}}</li>{{/if}}
-                    {{#if patched_versions}}<li>Patched: {{patched_versions}}</li>{{/if}}
+                    {{#if range}}<li>Vulnerable: {{range}}</li>{{/if}}
+                    {{#if fixAvailable}}<li>Fix: {{fixAvailableText fixAvailable}}</li>{{/if}}
                 </ul>
             </div>
 
-            {{#if overview}}
+            {{#if _firstAdvisory.overview}}
             <h3 class="text-sm font-semibold mt-4 mb-2 uppercase tracking-wide text-gray-500 dark:text-gray-400">Overview</h3>
-            <div class="text-sm">{{{markdown overview}}}</div>
+            <div class="text-sm">{{{markdown _firstAdvisory.overview}}}</div>
             {{/if}}
 
-            <h3 class="text-sm font-semibold mt-4 mb-2 uppercase tracking-wide text-gray-500 dark:text-gray-400">Findings</h3>
-            {{#each findings}}
+            <h3 class="text-sm font-semibold mt-4 mb-2 uppercase tracking-wide text-gray-500 dark:text-gray-400">Affected paths</h3>
             <div class="flex flex-wrap gap-1 mb-2">
-                {{#each paths}}
+                {{#each _paths}}
                 <span class="font-mono text-xs bg-gray-100 dark:bg-gray-700 rounded px-2 py-0.5">{{this}}</span>
                 {{/each}}
             </div>
-            {{/each}}
 
-            {{#if recommendation}}
+            {{#if _firstAdvisory.recommendation}}
             <h3 class="text-sm font-semibold mt-4 mb-2 uppercase tracking-wide text-gray-500 dark:text-gray-400">Remediation</h3>
-            <div class="text-sm">{{{markdown recommendation}}}</div>
+            <div class="text-sm">{{{markdown _firstAdvisory.recommendation}}}</div>
             {{/if}}
 
-            {{#if references}}
+            {{#if _firstAdvisory.references}}
             <h3 class="text-sm font-semibold mt-4 mb-2 uppercase tracking-wide text-gray-500 dark:text-gray-400">References</h3>
-            <div class="text-sm">{{{markdown references}}}</div>
+            <div class="text-sm">{{{markdown _firstAdvisory.references}}}</div>
             {{/if}}
 
-            {{#if action}}
-            <h3 class="text-sm font-semibold mt-4 mb-2 uppercase tracking-wide text-gray-500 dark:text-gray-400">Action</h3>
-            <p class="text-sm">
-                <code
-                    class="bg-gray-100 dark:bg-gray-700 rounded px-2 py-1 font-mono text-xs">npm {{action.action}} {{action.module}} {{#if action.depth}}--depth={{action.depth}}{{/if}}</code>
-            </p>
+            {{#if isDirect}}
+            <p class="text-xs text-gray-400 dark:text-gray-500 mt-4">Direct dependency</p>
             {{/if}}
         </div>
         <div class="flex justify-end gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
-            <a href="{{url}}" target="_blank" rel="noopener"
+            {{#if _firstAdvisory.url}}
+            <a href="{{_firstAdvisory.url}}" target="_blank" rel="noopener"
                 class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">More about this
                 vulnerability</a>
-            <button onclick="closeModal('advisory-modal-{{id}}')"
+            {{/if}}
+            <button onclick="closeModal('vuln-modal-{{safeDomId name}}')"
                 class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 text-sm rounded hover:bg-gray-300 dark:hover:bg-gray-500">Close</button>
         </div>
     </dialog>
