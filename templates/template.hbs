@@ -1,16 +1,14 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="{{#if_eq theme 'dark'}}dark{{/if_eq}}">
 
 <head>
-    <!-- Required meta tags -->
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet"
-        href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css"
-        integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.20/datatables.min.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Tailwind CSS Play CDN — appropriate for standalone HTML reports that require no build step -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10.3.1/build/styles/atom-one-dark.min.css">
 
@@ -18,301 +16,269 @@
     <meta name="description" content="{{metadata.vulnerabilities.total}} known vulnerabilities found.">
 
     <style>
-        pre {
-            background-color: #333333;
-            padding: 15px;
-        }
-
-        pre code {
-            color: #fff;
-        }
+        pre { background-color: #282c34; padding: 1rem; border-radius: 0.375rem; overflow-x: auto; }
+        pre code { color: #abb2bf; }
+        dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
     </style>
-
-    {{#if_eq theme 'dark'}}
-    <style>
-        body {
-            color: #fff;
-            background-color: #1e1e1e;
-        }
-
-        .card {
-            background-color: #252526;
-        }
-
-        .table thead th {
-            color: #fff
-        }
-
-        .modal-content {
-            background-color: #252526;
-        }
-
-        code {
-            color: #c586c0
-        }
-
-        a {
-            color: #9cdcfe;
-        }
-
-        a:hover {
-            color: #9cdcfe;
-            opacity: 0.667;
-
-        }
-
-        .close {
-            color: #fff;
-        }
-
-        .close:hover {
-            color: #fff;
-            text-decoration: none;
-        }
-
-        .table thead th {
-            border-bottom: 2px solid #444;
-        }
-
-        .table th,
-        .table td {
-            border-top: 1px solid #444;
-        }
-
-        .form-control {
-            background-color: #333333;
-            color: #fff;
-        }
-
-        .form-control:focus {
-            background-color: #333333;
-            color: #fff;
-        }
-
-        .page-link {
-            color: #9cdcfe;
-        }
-
-        .page-item.active .page-link {
-            color: #000;
-            background-color: #9cdcfe;
-            border-color: #9cdcfe;
-        }
-    </style>
-    {{/if_eq}}
 </head>
 
-<body class="mb-3">
-    <div class="container">
-        <h1 class="mt-5 text-center">NPM Audit Report</h1>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen pb-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-3xl font-bold text-center py-8">NPM Audit Report</h1>
 
-        <div class="text-center">
-            <div class="card-deck my-3">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            {{numeral metadata.vulnerabilities.total "0,0"}}
-                        </h5>
-                        <p class="card-text">Known vulnerabilities</p>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            {{numeral metadata.totalDependencies "0,0"}}
-                        </h5>
-                        <p class="card-text">Dependencies</p>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            {{moment date "MMMM Do YYYY, h:mm:ss a"}}
-                        </h5>
-                        <p class="card-text">Last updated</p>
-                    </div>
+        <!-- Summary cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
+                <div class="text-2xl font-bold">{{numeral metadata.vulnerabilities.total "0,0"}}</div>
+                <div class="text-gray-500 dark:text-gray-400 text-sm mt-1">Known vulnerabilities</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
+                <div class="text-2xl font-bold">{{numeral metadata.totalDependencies "0,0"}}</div>
+                <div class="text-gray-500 dark:text-gray-400 text-sm mt-1">Dependencies</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
+                <div class="text-lg font-semibold">{{moment date "MMMM Do YYYY, h:mm:ss a"}}</div>
+                <div class="text-gray-500 dark:text-gray-400 text-sm mt-1">Last updated</div>
+            </div>
+        </div>
+
+        <!-- Severity breakdown cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
+                <div class="text-2xl font-bold">{{numeral metadata.vulnerabilities.critical "0,0"}}</div>
+                <div class="mt-1">
+                    <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold {{severityBadgeClass 'critical'}}">critical</span>
                 </div>
             </div>
-            <div class="card-deck my-3">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            {{numeral metadata.vulnerabilities.critical "0,0"}}
-                        </h5>
-                        <p class="card-text">
-                            <span class="badge badge-{{severityClass 'critical'}}">critical</span>
-                        </p>
-                    </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
+                <div class="text-2xl font-bold">{{numeral metadata.vulnerabilities.high "0,0"}}</div>
+                <div class="mt-1">
+                    <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold {{severityBadgeClass 'high'}}">high</span>
                 </div>
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            {{numeral metadata.vulnerabilities.high "0,0"}}
-                        </h5>
-                        <p class="card-text">
-                            <span class="badge badge-{{severityClass 'high'}}">high</span>
-                        </p>
-                    </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
+                <div class="text-2xl font-bold">{{numeral metadata.vulnerabilities.moderate "0,0"}}</div>
+                <div class="mt-1">
+                    <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold {{severityBadgeClass 'moderate'}}">moderate</span>
                 </div>
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            {{numeral metadata.vulnerabilities.moderate "0,0"}}
-                        </h5>
-                        <p class="card-text">
-                            <span class="badge badge-{{severityClass 'moderate'}}">moderate</span>
-                        </p>
-                    </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
+                <div class="text-2xl font-bold">{{numeral metadata.vulnerabilities.low "0,0"}}</div>
+                <div class="mt-1">
+                    <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold {{severityBadgeClass 'low'}}">low</span>
                 </div>
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            {{numeral metadata.vulnerabilities.low "0,0"}}
-                        </h5>
-                        <p class="card-text">
-                            <span class="badge badge-{{severityClass 'low'}}">low</span>
-                        </p>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            {{numeral metadata.vulnerabilities.info "0,0"}}
-                        </h5>
-                        <p class="card-text">
-                            <span class="badge badge-{{severityClass 'info'}}">info</span>
-                        </p>
-                    </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
+                <div class="text-2xl font-bold">{{numeral metadata.vulnerabilities.info "0,0"}}</div>
+                <div class="mt-1">
+                    <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold {{severityBadgeClass 'info'}}">info</span>
                 </div>
             </div>
         </div>
 
-        <div class="row">
-            <div class="col">
-
-                <table id="advisories" class="table">
-                    <thead>
-                        <tr>
-                            <th scope="col">Name</th>
-                            <th scope="col">Module</th>
-                            <th scope="col">Severity</th>
-                            <th scope="col">CVEs</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{#each advisories}}
-                        <tr>
-                            <th scope="row">
-                                <a href="{{url}}" data-toggle="modal" data-target="#advisory-modal-{{id}}">{{title}}</a>
-                            </th>
-                            <td>
-                                <a href="https://npmjs.com/package/{{module_name}}" target="_blank"
-                                    rel="noopener">{{module_name}}</a>
-                            </td>
-                            <td data-order="{{severityNumber severity}}"><span
-                                    class="badge badge-{{severityClass severity}}">{{severity}}</span></td>
-                            <td>
-                                {{cwe}}
-                                {{#each cves}}
-                                , {{this}}
-                                {{/each}}
-                            </td>
-                        </tr>
-                        {{/each}}
-                    </tbody>
-                </table>
-            </div>
+        <!-- Search -->
+        <div class="mb-4">
+            <input type="text" id="search" placeholder="Search vulnerabilities..."
+                class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
-    </div>
 
-
-    {{#each advisories}}
-    <div class="modal" tabindex="-1" role="dialog" id="advisory-modal-{{id}}">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <span class="badge badge-{{severityClass severity}}">{{severity}}</span>
-                        {{title}}
-                    </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <ul>
-                                <li>Module:
-                                    <a href="https://npmjs.com/package/{{module_name}}" target="_blank"
-                                        rel="noopener">{{module_name}}</a>
-                                </li>
-                                <li>Published: {{moment created "MMMM Do YYYY"}} </li>
-                                <li>Reported by: {{reported_by.name}}</li>
-                                <li>{{cwe}}</li>
-                                {{#each cves}}
-                                <li>{{this}}</li>
-                                {{/each}}
-                            </ul>
-                        </div>
-                        <div class="col-md-6">
-                            <ul>
-                                <li>Vulnerable: {{vulnerable_versions}}</li>
-                                <li>Patched: {{patched_versions}}</li>
-                                <li>Exploitability: {{metadata.exploitability}}</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <h3>Overview</h3>
-                    <p class="card-text">{{{markdown overview}}}</p>
-
-                    <h3>Findings</h3>
-                    {{#each findings}}
-                    <ul>
-                        {{#each paths}}
-                        <li>{{this}} </li>
-                        {{/each}}
-                    </ul>
+        <!-- Advisories table -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-x-auto">
+            <table id="advisories" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th scope="col" data-col="0"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer select-none hover:bg-gray-100 dark:hover:bg-gray-600">
+                            Name <span class="sort-icon ml-1 opacity-50">⇅</span>
+                        </th>
+                        <th scope="col" data-col="1"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer select-none hover:bg-gray-100 dark:hover:bg-gray-600">
+                            Module <span class="sort-icon ml-1 opacity-50">⇅</span>
+                        </th>
+                        <th scope="col" data-col="2"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer select-none hover:bg-gray-100 dark:hover:bg-gray-600">
+                            Severity <span class="sort-icon ml-1 opacity-50">⇅</span>
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            CVEs
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="advisories-body" class="divide-y divide-gray-200 dark:divide-gray-700">
+                    {{#each advisories}}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                        onclick="openModal('advisory-modal-{{id}}')">
+                        <td class="px-6 py-4 text-sm font-medium max-w-xs">
+                            <a href="#" onclick="event.stopPropagation(); openModal('advisory-modal-{{id}}')"
+                                class="text-blue-600 dark:text-blue-400 hover:underline">{{title}}</a>
+                        </td>
+                        <td class="px-6 py-4 text-sm whitespace-nowrap">
+                            <a href="https://npmjs.com/package/{{module_name}}" target="_blank" rel="noopener"
+                                onclick="event.stopPropagation()"
+                                class="text-blue-600 dark:text-blue-400 hover:underline">{{module_name}}</a>
+                        </td>
+                        <td class="px-6 py-4 text-sm whitespace-nowrap"
+                            data-severity-order="{{severityNumber severity}}">
+                            <span
+                                class="inline-block px-2 py-0.5 rounded text-xs font-semibold {{severityBadgeClass severity}}">{{severity}}</span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                            {{cwe}}{{#each cves}}, {{this}}{{/each}}
+                        </td>
+                    </tr>
                     {{/each}}
-
-                    {{#if recommendation}}
-                    <h3>Remediation</h3>
-                    <p class="card-text">{{{markdown recommendation}}}</p>
-                    {{/if}} {{#if references}}
-                    <h3>References</h3>
-                    <p class="card-text">{{{markdown references}}}</p>
-                    {{/if}} {{#if action}}
-                    <h3>Action</h3>
-                    <p class="card-text">
-                        <code>npm {{action.action}} {{action.module}} {{#if action.depth}}--depth={{action.depth}}{{/if}}</code>
-                    </p>
-                    {{/if}}
-
-                </div>
-                <div class="modal-footer">
-                    <a class="btn btn-raised mr-2 btn-primary" href="{{url}}" target="_blank" rel="noopener">More about
-                        this vulnerability</a>
-                    <button type="button" class="btn btn-raised btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-            </div>
+                </tbody>
+            </table>
         </div>
     </div>
+
+    <!-- Advisory modals -->
+    {{#each advisories}}
+    <dialog id="advisory-modal-{{id}}"
+        class="bg-white dark:bg-gray-800 dark:text-gray-100 rounded-lg shadow-xl max-w-3xl w-full mx-auto p-0 backdrop:bg-black/50">
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+            <h5 class="text-base font-semibold flex items-center gap-2 pr-4">
+                <span
+                    class="inline-block px-2 py-0.5 rounded text-xs font-semibold shrink-0 {{severityBadgeClass severity}}">{{severity}}</span>
+                {{title}}
+            </h5>
+            <button onclick="closeModal('advisory-modal-{{id}}')"
+                class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-2xl leading-none shrink-0"
+                aria-label="Close">&times;</button>
+        </div>
+        <div class="p-4 overflow-y-auto max-h-[70vh]">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 text-sm">
+                <ul class="space-y-1">
+                    <li>Module: <a href="https://npmjs.com/package/{{module_name}}" target="_blank" rel="noopener"
+                            class="text-blue-600 dark:text-blue-400 hover:underline">{{module_name}}</a></li>
+                    {{#if created}}<li>Published: {{moment created "MMMM Do YYYY"}}</li>{{/if}}
+                    {{#if reported_by.name}}<li>Reported by: {{reported_by.name}}</li>{{/if}}
+                    {{#if cwe}}<li>{{cwe}}</li>{{/if}}
+                    {{#each cves}}<li>{{this}}</li>{{/each}}
+                </ul>
+                <ul class="space-y-1">
+                    {{#if vulnerable_versions}}<li>Vulnerable: {{vulnerable_versions}}</li>{{/if}}
+                    {{#if patched_versions}}<li>Patched: {{patched_versions}}</li>{{/if}}
+                </ul>
+            </div>
+
+            {{#if overview}}
+            <h3 class="text-sm font-semibold mt-4 mb-2 uppercase tracking-wide text-gray-500 dark:text-gray-400">Overview</h3>
+            <div class="text-sm">{{{markdown overview}}}</div>
+            {{/if}}
+
+            <h3 class="text-sm font-semibold mt-4 mb-2 uppercase tracking-wide text-gray-500 dark:text-gray-400">Findings</h3>
+            {{#each findings}}
+            <div class="flex flex-wrap gap-1 mb-2">
+                {{#each paths}}
+                <span class="font-mono text-xs bg-gray-100 dark:bg-gray-700 rounded px-2 py-0.5">{{this}}</span>
+                {{/each}}
+            </div>
+            {{/each}}
+
+            {{#if recommendation}}
+            <h3 class="text-sm font-semibold mt-4 mb-2 uppercase tracking-wide text-gray-500 dark:text-gray-400">Remediation</h3>
+            <div class="text-sm">{{{markdown recommendation}}}</div>
+            {{/if}}
+
+            {{#if references}}
+            <h3 class="text-sm font-semibold mt-4 mb-2 uppercase tracking-wide text-gray-500 dark:text-gray-400">References</h3>
+            <div class="text-sm">{{{markdown references}}}</div>
+            {{/if}}
+
+            {{#if action}}
+            <h3 class="text-sm font-semibold mt-4 mb-2 uppercase tracking-wide text-gray-500 dark:text-gray-400">Action</h3>
+            <p class="text-sm">
+                <code
+                    class="bg-gray-100 dark:bg-gray-700 rounded px-2 py-1 font-mono text-xs">npm {{action.action}} {{action.module}} {{#if action.depth}}--depth={{action.depth}}{{/if}}</code>
+            </p>
+            {{/if}}
+        </div>
+        <div class="flex justify-end gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
+            <a href="{{url}}" target="_blank" rel="noopener"
+                class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">More about this
+                vulnerability</a>
+            <button onclick="closeModal('advisory-modal-{{id}}')"
+                class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 text-sm rounded hover:bg-gray-300 dark:hover:bg-gray-500">Close</button>
+        </div>
+    </dialog>
     {{/each}}
 
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-        crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
-        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
-        crossorigin="anonymous"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.20/datatables.min.js"></script>
-
     <script>
-        $(document).ready(function () {
-            $('#advisories').DataTable({
-                order: [[2, 'asc']]
+        function openModal(id) {
+            document.getElementById(id).showModal();
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).close();
+        }
+
+        // Close on backdrop click
+        document.querySelectorAll('dialog').forEach(function (dialog) {
+            dialog.addEventListener('click', function (e) {
+                var rect = dialog.getBoundingClientRect();
+                if (e.clientX < rect.left || e.clientX > rect.right ||
+                    e.clientY < rect.top || e.clientY > rect.bottom) {
+                    dialog.close();
+                }
             });
         });
+
+        // Search
+        document.getElementById('search').addEventListener('input', function () {
+            var q = this.value.toLowerCase();
+            document.querySelectorAll('#advisories-body tr').forEach(function (row) {
+                row.style.display = row.textContent.toLowerCase().indexOf(q) !== -1 ? '' : 'none';
+            });
+        });
+
+        // Sort
+        var sortCol = 2, sortDir = 1;
+
+        document.querySelectorAll('#advisories thead th[data-col]').forEach(function (th) {
+            th.addEventListener('click', function () {
+                var col = parseInt(this.getAttribute('data-col'));
+                if (sortCol === col) {
+                    sortDir *= -1;
+                } else {
+                    sortCol = col;
+                    sortDir = 1;
+                }
+                sortTable();
+                document.querySelectorAll('#advisories thead .sort-icon').forEach(function (i) {
+                    i.textContent = '⇅';
+                    i.classList.add('opacity-50');
+                });
+                var icon = th.querySelector('.sort-icon');
+                icon.textContent = sortDir === 1 ? '↑' : '↓';
+                icon.classList.remove('opacity-50');
+            });
+        });
+
+        function sortTable() {
+            var tbody = document.getElementById('advisories-body');
+            var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+            rows.sort(function (a, b) {
+                var aVal, bVal;
+                if (sortCol === 2) {
+                    aVal = parseInt(a.querySelector('td[data-severity-order]').getAttribute('data-severity-order'));
+                    bVal = parseInt(b.querySelector('td[data-severity-order]').getAttribute('data-severity-order'));
+                } else {
+                    var aTd = a.querySelectorAll('td')[sortCol];
+                    var bTd = b.querySelectorAll('td')[sortCol];
+                    aVal = aTd ? aTd.textContent.trim().toLowerCase() : '';
+                    bVal = bTd ? bTd.textContent.trim().toLowerCase() : '';
+                }
+                if (aVal < bVal) return -sortDir;
+                if (aVal > bVal) return sortDir;
+                return 0;
+            });
+            rows.forEach(function (r) { tbody.appendChild(r); });
+        }
+
+        // Initial sort by severity
+        sortTable();
     </script>
 </body>
 
