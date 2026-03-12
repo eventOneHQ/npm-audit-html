@@ -2,6 +2,7 @@
   "name": "npm-audit-html",
   "version": "0.0.0-development",
   "description": "Generate a HTML report for NPM Audit",
+  "type": "module",
   "main": "index.js",
   "bin": {
     "npm-audit-html": "index.js"
@@ -24,29 +25,29 @@
   "devDependencies": {
     "commitizen": "^4.2.2",
     "cz-conventional-changelog": "^3.3.0",
-    "eslint": "^7.11.0",
-    "eslint-config-standard": "^15.0.0",
-    "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.2",
+    "eslint": "^8.57.1",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-n": "^16.6.2",
+    "eslint-plugin-promise": "^6.6.0",
     "husky": "^4.3.0",
     "lint-staged": "^10.4.2",
-    "prettier": "^2.1.2",
+    "prettier": "^3.5.3",
     "semantic-release": "^17.2.1"
   },
   "dependencies": {
-    "chalk": "^4.1.0",
-    "commander": "^3.0.2",
-    "fs-extra": "^8.1.0",
-    "handlebars": "^4.7.6",
-    "highlight.js": "^10.3.1",
-    "marked": "^1.2.2",
-    "moment": "^2.29.1",
+    "chalk": "^5.6.2",
+    "commander": "^14.0.3",
+    "fs-extra": "^11.3.4",
+    "handlebars": "^4.7.8",
+    "highlight.js": "^11.11.1",
+    "marked": "^17.0.4",
+    "marked-highlight": "^2.2.3",
+    "moment": "^2.30.1",
     "numeral": "^2.0.6",
-    "open": "^7.3.0",
-    "terminal-link": "^2.1.1",
-    "update-notifier": "^4.1.3"
+    "open": "^11.0.0",
+    "terminal-link": "^5.0.0",
+    "update-notifier": "^7.3.1"
   },
   "config": {
     "commitizen": {
@@ -55,8 +56,7 @@
   },
   "lint-staged": {
     "*.js": [
-      "npm run lint!",
-      "git add"
+      "npm run lint!"
     ]
   }
 }
