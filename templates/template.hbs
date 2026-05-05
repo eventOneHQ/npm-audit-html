@@ -27,7 +27,19 @@
         .seg-low       { background: #3b82f6; }
         .seg-info      { background: #94a3b8; }
 
-        dialog { padding: 0; max-height: 90vh; }
+        dialog {
+            padding: 0;
+            /* Center the dialog horizontally and vertically on all browsers */
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            margin: 0;
+            /* Responsive width: near-full on mobile, capped on desktop */
+            width: min(calc(100vw - 2rem), 42rem);
+            max-height: min(90vh, 700px);
+            overflow: hidden;
+        }
         dialog::backdrop { background: rgba(0,0,0,0.55); backdrop-filter: blur(3px); }
 
         pre { background: #0d1117; padding: 1rem; border-radius: .5rem; overflow-x: auto; margin: .5rem 0; }
@@ -188,11 +200,18 @@
 
                             <!-- Advisory title + URL -->
                             <td class="px-4 py-4" data-sort="{{_firstAdvisory.title}}">
+                                {{#if _isTransitive}}
+                                <div class="font-medium text-sm text-slate-600 dark:text-slate-300 leading-snug max-w-xs">
+                                    {{name}}
+                                </div>
+                                <div class="text-xs text-slate-400 mt-0.5 max-w-xs truncate">via: {{#if via}}{{#each via}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}{{/if}}</div>
+                                {{else}}
                                 <div class="font-medium text-sm text-blue-700 dark:text-blue-400 group-hover:underline leading-snug max-w-xs truncate">
                                     {{_firstAdvisory.title}}
                                 </div>
                                 {{#if _firstAdvisory.url}}
                                 <div class="text-xs text-slate-400 truncate max-w-xs mt-0.5">{{_firstAdvisory.url}}</div>
+                                {{/if}}
                                 {{/if}}
                             </td>
 
@@ -288,7 +307,7 @@
     <!-- ── Vulnerability modals ──────────────────────────────── -->
     {{#each vulnerabilities}}
     <dialog id="vuln-modal-{{safeDomId name}}"
-        class="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden border border-slate-200 dark:border-slate-700">
+        class="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
 
         <!-- Severity color stripe -->
         <div class="h-1 {{severityBadgeClass severity}}"></div>
@@ -299,10 +318,19 @@
                 <div class="flex flex-wrap items-center gap-2 mb-1.5">
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold {{severityBadgeClass severity}}">{{severity}}</span>
                     {{#if isDirect}}<span class="text-xs text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-600 rounded-full px-2 py-0.5 font-medium">direct</span>{{/if}}
+                    {{#if _isTransitive}}<span class="text-xs text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-600 rounded-full px-2 py-0.5 font-medium">transitive</span>{{/if}}
                 </div>
-                <h2 class="text-base font-bold leading-snug">{{_firstAdvisory.title}}</h2>
+                <h2 class="text-base font-bold leading-snug">{{name}}</h2>
+                {{#if _isTransitive}}
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                    Affected through:
+                    {{#if via}}{{#each via}}<code class="font-mono text-xs bg-slate-100 dark:bg-slate-700 rounded px-1">{{this}}</code>{{#unless @last}}, {{/unless}}{{/each}}{{/if}}
+                </p>
+                {{else}}
+                <p class="text-sm text-slate-600 dark:text-slate-300 mt-0.5 leading-snug">{{_firstAdvisory.title}}</p>
+                {{/if}}
                 <a href="https://npmjs.com/package/{{name}}" target="_blank" rel="noopener"
-                    class="font-mono text-sm text-blue-600 dark:text-blue-400 hover:underline mt-0.5 inline-block">{{name}}</a>
+                    class="font-mono text-xs text-blue-600 dark:text-blue-400 hover:underline mt-0.5 inline-block">{{name}}</a>
             </div>
             <button onclick="closeModal('vuln-modal-{{safeDomId name}}')"
                 class="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
@@ -313,8 +341,8 @@
             </button>
         </div>
 
-        <!-- Modal body -->
-        <div class="overflow-y-auto px-6 py-5 space-y-6" style="max-height: calc(90vh - 180px)">
+        <!-- Modal body: 130px accounts for the header (badge+title+padding) + severity stripe height -->
+        <div class="overflow-y-auto px-6 py-5 space-y-6" style="max-height: calc(min(90vh, 700px) - 130px)">
 
             <!-- Metadata grid -->
             <div class="grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
