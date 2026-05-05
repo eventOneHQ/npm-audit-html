@@ -1,3 +1,7 @@
 {
-    "extends": "standard"
+    "extends": "standard",
+    "parserOptions": {
+        "sourceType": "module",
+        "ecmaVersion": "latest"
+    }
 }

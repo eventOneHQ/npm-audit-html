@@ -1,17 +1,24 @@
 #!/usr/bin/env node
 
-const program = require('commander')
-const updateNotifier = require('update-notifier')
-const fs = require('fs-extra')
-const open = require('open')
-const path = require('path')
+import { Command } from 'commander'
+import updateNotifier from 'update-notifier'
+import fs from 'fs-extra'
+import open from 'open'
+import { resolve, join, dirname } from 'path'
+import { fileURLToPath } from 'url'
+import { createRequire } from 'module'
 
-const reporter = require('./lib/reporter')
+import reporter from './lib/reporter.js'
+
+const require = createRequire(import.meta.url)
 const pkg = require('./package.json')
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 updateNotifier({ pkg }).notify()
 
 let stdin = ''
+
+const program = new Command()
 
 program
   .version(pkg.version)
@@ -24,11 +31,11 @@ program
   )
   .option('-t, --template [handlebars file]', 'handlebars template file')
   .option('-f, --fatal-exit-code', 'exit with code 1 if vulnerabilities were found')
-  .action(async (cmd, env) => {
+  .action(async (opts) => {
     try {
       let data
-      if (cmd.input) {
-        data = await fs.readJson(cmd.input)
+      if (opts.input) {
+        data = await fs.readJson(opts.input)
       } else if (stdin) {
         data = JSON.parse(stdin)
       } else {
@@ -36,7 +43,7 @@ program
         return process.exit(1)
       }
 
-      await genReport(data, cmd.output, cmd.template, cmd.theme, cmd.open, cmd.fatalExitCode)
+      await genReport(data, opts.output, opts.template, opts.theme, opts.open, opts.fatalExitCode)
     } catch (err) {
       console.error('Failed to parse NPM Audit JSON!')
       return process.exit(1)
@@ -57,7 +64,7 @@ const genReport = async (
       return process.exit(1)
     }
 
-    const templateFile = template || path.join(__dirname, '/templates/template.hbs')
+    const templateFile = template || join(__dirname, '/templates/template.hbs')
 
     const modifiedData = await reporter(data, templateFile, output, theme)
 
@@ -69,7 +76,7 @@ const genReport = async (
 
     if (openBrowser) {
       console.log('Opening report in default browser...')
-      await open(path.resolve(output))
+      await open(resolve(output))
     }
   } catch (err) {
     console.log('An error occurred!')
@@ -79,15 +86,10 @@ const genReport = async (
 }
 
 if (process.stdin.isTTY) {
-  program.parse(process.argv)
+  await program.parseAsync()
 } else {
-  process.stdin.on('readable', function () {
-    const chunk = this.read()
-    if (chunk !== null) {
-      stdin += chunk
-    }
-  })
-  process.stdin.on('end', function () {
-    program.parse(process.argv)
-  })
+  for await (const chunk of process.stdin) {
+    stdin += chunk
+  }
+  await program.parseAsync()
 }
