@@ -4,276 +4,529 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Tailwind CSS Play CDN — appropriate for standalone HTML reports that require no build step -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class' }
     </script>
     <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10.3.1/build/styles/atom-one-dark.min.css">
-
+        href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github-dark.min.css">
     <title>NPM Audit Report</title>
-    <meta name="description" content="{{metadata.vulnerabilities.total}} known vulnerabilities found.">
 
     <style>
-        pre { background-color: #282c34; padding: 1rem; border-radius: 0.375rem; overflow-x: auto; }
-        pre code { color: #abb2bf; }
-        dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
+        /* Severity-colored left border on table rows */
+        .sev-critical  { border-left: 3px solid #dc2626; }
+        .sev-high      { border-left: 3px solid #f97316; }
+        .sev-moderate  { border-left: 3px solid #f59e0b; }
+        .sev-low       { border-left: 3px solid #3b82f6; }
+        .sev-info      { border-left: 3px solid #94a3b8; }
+
+        /* Severity progress segments */
+        .seg-critical  { background: #dc2626; }
+        .seg-high      { background: #f97316; }
+        .seg-moderate  { background: #f59e0b; }
+        .seg-low       { background: #3b82f6; }
+        .seg-info      { background: #94a3b8; }
+
+        dialog { padding: 0; max-height: 90vh; }
+        dialog::backdrop { background: rgba(0,0,0,0.55); backdrop-filter: blur(3px); }
+
+        pre { background: #0d1117; padding: 1rem; border-radius: .5rem; overflow-x: auto; margin: .5rem 0; }
+        pre code { font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace; font-size: .8rem; line-height: 1.6; }
+
+        .filter-btn.active { outline: 2px solid currentColor; outline-offset: -2px; }
+
+        /* Remove spinner on input[type=text] */
+        input:focus { box-shadow: none; }
     </style>
 </head>
 
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen pb-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 class="text-3xl font-bold text-center py-8">NPM Audit Report</h1>
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen antialiased">
 
-        <!-- Summary cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
-                <div class="text-2xl font-bold">{{numeral metadata.vulnerabilities.total "0,0"}}</div>
-                <div class="text-gray-500 dark:text-gray-400 text-sm mt-1">Known vulnerabilities</div>
+    <!-- ── Header ───────────────────────────────────────────── -->
+    <header class="bg-gradient-to-r from-slate-800 via-slate-800 to-slate-900 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3 min-w-0">
+                    <!-- Shield icon -->
+                    <div class="shrink-0 w-10 h-10 rounded-xl bg-red-500 shadow-md flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+                        </svg>
+                    </div>
+                    <div class="min-w-0">
+                        <h1 class="text-lg font-bold tracking-tight leading-tight">NPM Audit Report</h1>
+                        <p class="text-slate-400 text-xs truncate">Generated {{moment date "MMMM Do YYYY [at] h:mm a [UTC]"}}</p>
+                    </div>
+                </div>
+                <!-- Dark / light toggle -->
+                <button id="theme-toggle" onclick="toggleTheme()"
+                    class="shrink-0 w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 transition-colors flex items-center justify-center"
+                    title="Toggle dark / light mode">
+                    <svg id="icon-sun" class="w-5 h-5 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>
+                    </svg>
+                    <svg id="icon-moon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
+                    </svg>
+                </button>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
-                <div class="text-2xl font-bold">{{numeral metadata.dependencies.total "0,0"}}</div>
-                <div class="text-gray-500 dark:text-gray-400 text-sm mt-1">Dependencies</div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+        <!-- ── Summary row ──────────────────────────────────── -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Total vulnerabilities -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-5">
+                <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-2">Vulnerabilities</p>
+                <p class="text-4xl font-extrabold leading-none mb-1">{{numeral metadata.vulnerabilities.total "0,0"}}</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">known issues</p>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
-                <div class="text-lg font-semibold">{{moment date "MMMM Do YYYY, h:mm:ss a"}}</div>
-                <div class="text-gray-500 dark:text-gray-400 text-sm mt-1">Last updated</div>
+
+            <!-- Total dependencies -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-5">
+                <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-2">Dependencies</p>
+                <p class="text-4xl font-extrabold leading-none mb-1">{{numeral metadata.dependencies.total "0,0"}}</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">packages scanned</p>
+            </div>
+
+            <!-- Severity breakdown — spans 2 cols on large screens -->
+            <div class="col-span-2 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-5">
+                <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">Severity breakdown</p>
+
+                <!-- Stacked progress bar -->
+                <div class="flex rounded-full overflow-hidden h-2 mb-4 bg-slate-100 dark:bg-slate-700" id="severity-bar">
+                    {{#if metadata.vulnerabilities.critical}}<div class="seg-critical" style="flex:{{metadata.vulnerabilities.critical}}" title="Critical: {{metadata.vulnerabilities.critical}}"></div>{{/if}}
+                    {{#if metadata.vulnerabilities.high}}<div class="seg-high" style="flex:{{metadata.vulnerabilities.high}}" title="High: {{metadata.vulnerabilities.high}}"></div>{{/if}}
+                    {{#if metadata.vulnerabilities.moderate}}<div class="seg-moderate" style="flex:{{metadata.vulnerabilities.moderate}}" title="Moderate: {{metadata.vulnerabilities.moderate}}"></div>{{/if}}
+                    {{#if metadata.vulnerabilities.low}}<div class="seg-low" style="flex:{{metadata.vulnerabilities.low}}" title="Low: {{metadata.vulnerabilities.low}}"></div>{{/if}}
+                    {{#if metadata.vulnerabilities.info}}<div class="seg-info" style="flex:{{metadata.vulnerabilities.info}}" title="Info: {{metadata.vulnerabilities.info}}"></div>{{/if}}
+                </div>
+
+                <div class="grid grid-cols-5 gap-2 text-center">
+                    <div>
+                        <p class="text-base font-bold text-red-600 dark:text-red-400">{{numeral metadata.vulnerabilities.critical "0,0"}}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">Critical</p>
+                    </div>
+                    <div>
+                        <p class="text-base font-bold text-orange-500 dark:text-orange-400">{{numeral metadata.vulnerabilities.high "0,0"}}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">High</p>
+                    </div>
+                    <div>
+                        <p class="text-base font-bold text-amber-500 dark:text-amber-400">{{numeral metadata.vulnerabilities.moderate "0,0"}}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">Moderate</p>
+                    </div>
+                    <div>
+                        <p class="text-base font-bold text-blue-500 dark:text-blue-400">{{numeral metadata.vulnerabilities.low "0,0"}}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">Low</p>
+                    </div>
+                    <div>
+                        <p class="text-base font-bold text-slate-400">{{numeral metadata.vulnerabilities.info "0,0"}}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">Info</p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Severity breakdown cards -->
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
-                <div class="text-2xl font-bold">{{numeral metadata.vulnerabilities.critical "0,0"}}</div>
-                <div class="mt-1">
-                    <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold {{severityBadgeClass 'critical'}}">critical</span>
-                </div>
+        {{#if metadata.vulnerabilities.total}}
+
+        <!-- ── Filter / search bar ──────────────────────────── -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 px-4 py-3 flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+            <!-- Search input -->
+            <div class="relative flex-1 w-full">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <input id="search" type="text" placeholder="Search vulnerabilities…" autocomplete="off"
+                    class="w-full pl-9 pr-4 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
-                <div class="text-2xl font-bold">{{numeral metadata.vulnerabilities.high "0,0"}}</div>
-                <div class="mt-1">
-                    <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold {{severityBadgeClass 'high'}}">high</span>
-                </div>
-            </div>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
-                <div class="text-2xl font-bold">{{numeral metadata.vulnerabilities.moderate "0,0"}}</div>
-                <div class="mt-1">
-                    <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold {{severityBadgeClass 'moderate'}}">moderate</span>
-                </div>
-            </div>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
-                <div class="text-2xl font-bold">{{numeral metadata.vulnerabilities.low "0,0"}}</div>
-                <div class="mt-1">
-                    <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold {{severityBadgeClass 'low'}}">low</span>
-                </div>
-            </div>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 text-center">
-                <div class="text-2xl font-bold">{{numeral metadata.vulnerabilities.info "0,0"}}</div>
-                <div class="mt-1">
-                    <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold {{severityBadgeClass 'info'}}">info</span>
-                </div>
+            <!-- Severity filter pills -->
+            <div class="flex flex-wrap gap-1.5 shrink-0">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="critical" data-color="red">Critical</button>
+                <button class="filter-btn" data-filter="high" data-color="orange">High</button>
+                <button class="filter-btn" data-filter="moderate" data-color="amber">Moderate</button>
+                <button class="filter-btn" data-filter="low" data-color="blue">Low</button>
+                <button class="filter-btn" data-filter="info" data-color="slate">Info</button>
             </div>
         </div>
 
-        <!-- Search -->
-        <div class="mb-4">
-            <input type="text" id="search" placeholder="Search vulnerabilities..."
-                class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <!-- ── Vulnerability table ───────────────────────────── -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            <th class="w-px pl-4 pr-0 py-3"></th>
+                            <th data-col="name" class="sortable px-4 py-3 text-left cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 select-none">
+                                Advisory <span class="sort-icon ml-0.5 opacity-40">⇅</span>
+                            </th>
+                            <th data-col="module" class="sortable px-4 py-3 text-left cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 select-none">
+                                Package <span class="sort-icon ml-0.5 opacity-40">⇅</span>
+                            </th>
+                            <th data-col="severity" class="sortable px-4 py-3 text-left cursor-pointer hover:text-slate-700 dark:hover:text-slate-200 select-none">
+                                Severity <span class="sort-icon ml-0.5 opacity-40">⇅</span>
+                            </th>
+                            <th class="px-4 py-3 text-left hidden sm:table-cell">CWE</th>
+                            <th class="px-4 py-3 text-left hidden md:table-cell">Fix</th>
+                            <th class="px-4 py-3 text-left hidden lg:table-cell">Paths</th>
+                            <th class="w-8 pr-4"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="vuln-body" class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                        {{#each vulnerabilities}}
+                        <tr class="sev-{{severity}} hover:bg-blue-50/40 dark:hover:bg-slate-700/40 cursor-pointer transition-colors group"
+                            data-severity="{{severity}}"
+                            data-severity-order="{{severityNumber severity}}"
+                            onclick="openModal('vuln-modal-{{safeDomId name}}')">
+
+                            <!-- Severity dot -->
+                            <td class="pl-4 pr-0 py-4">
+                                <span class="inline-block w-2 h-2 rounded-full {{severityBadgeClass severity}}"></span>
+                            </td>
+
+                            <!-- Advisory title + URL -->
+                            <td class="px-4 py-4" data-sort="{{_firstAdvisory.title}}">
+                                <div class="font-medium text-sm text-blue-700 dark:text-blue-400 group-hover:underline leading-snug max-w-xs truncate">
+                                    {{_firstAdvisory.title}}
+                                </div>
+                                {{#if _firstAdvisory.url}}
+                                <div class="text-xs text-slate-400 truncate max-w-xs mt-0.5">{{_firstAdvisory.url}}</div>
+                                {{/if}}
+                            </td>
+
+                            <!-- Package name + vulnerable range -->
+                            <td class="px-4 py-4 whitespace-nowrap" data-sort="{{name}}">
+                                <a href="https://npmjs.com/package/{{name}}" target="_blank" rel="noopener"
+                                    onclick="event.stopPropagation()"
+                                    class="font-mono text-sm font-semibold text-slate-800 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors">{{name}}</a>
+                                {{#if range}}
+                                <div class="font-mono text-xs text-slate-400 mt-0.5">{{range}}</div>
+                                {{/if}}
+                            </td>
+
+                            <!-- Severity badge -->
+                            <td class="px-4 py-4 whitespace-nowrap" data-sort="{{severityNumber severity}}">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold {{severityBadgeClass severity}}">
+                                    {{severity}}
+                                </span>
+                            </td>
+
+                            <!-- CWE -->
+                            <td class="px-4 py-4 text-xs text-slate-500 dark:text-slate-400 font-mono hidden sm:table-cell">
+                                {{#each _firstAdvisory.cwe}}{{this}}{{#unless @last}}<br>{{/unless}}{{/each}}
+                            </td>
+
+                            <!-- Fix available -->
+                            <td class="px-4 py-4 text-xs hidden md:table-cell">
+                                {{#if fixAvailable}}
+                                <span class="inline-flex items-center gap-1 font-medium text-emerald-700 dark:text-emerald-400">
+                                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                                    </svg>
+                                    {{fixAvailableText fixAvailable}}
+                                </span>
+                                {{else}}
+                                <span class="text-slate-300 dark:text-slate-600">—</span>
+                                {{/if}}
+                            </td>
+
+                            <!-- First path + remainder count -->
+                            <td class="px-4 py-4 hidden lg:table-cell">
+                                {{#if _paths}}
+                                <code class="text-xs bg-slate-100 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300 rounded px-1.5 py-0.5">{{_paths.[0]}}</code>
+                                {{#if _pathsRemainder}}
+                                <span class="text-xs text-slate-400 ml-1">+{{_pathsRemainder}} more</span>
+                                {{/if}}
+                                {{/if}}
+                            </td>
+
+                            <!-- Chevron -->
+                            <td class="pr-4 py-4 text-right">
+                                <svg class="w-4 h-4 text-slate-300 dark:text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity inline-block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+                                </svg>
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- No-results empty state (shown via JS) -->
+            <div id="no-results" class="hidden text-center py-14 text-slate-400 dark:text-slate-500">
+                <svg class="w-10 h-10 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z"/>
+                </svg>
+                <p class="text-sm">No vulnerabilities match your search or filter.</p>
+            </div>
         </div>
 
-        <!-- Vulnerabilities table -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-x-auto">
-            <table id="advisories" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-gray-700">
-                    <tr>
-                        <th scope="col" data-col="0"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer select-none hover:bg-gray-100 dark:hover:bg-gray-600">
-                            Name <span class="sort-icon ml-1 opacity-50">⇅</span>
-                        </th>
-                        <th scope="col" data-col="1"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer select-none hover:bg-gray-100 dark:hover:bg-gray-600">
-                            Module <span class="sort-icon ml-1 opacity-50">⇅</span>
-                        </th>
-                        <th scope="col" data-col="2"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer select-none hover:bg-gray-100 dark:hover:bg-gray-600">
-                            Severity <span class="sort-icon ml-1 opacity-50">⇅</span>
-                        </th>
-                        <th scope="col"
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            CWEs
-                        </th>
-                    </tr>
-                </thead>
-                <tbody id="advisories-body" class="divide-y divide-gray-200 dark:divide-gray-700">
-                    {{#each vulnerabilities}}
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                        onclick="openModal('vuln-modal-{{safeDomId name}}')">
-                        <td class="px-6 py-4 text-sm font-medium max-w-xs">
-                            <a href="#" onclick="event.stopPropagation(); openModal('vuln-modal-{{safeDomId name}}')"
-                                class="text-blue-600 dark:text-blue-400 hover:underline">{{_firstAdvisory.title}}</a>
-                        </td>
-                        <td class="px-6 py-4 text-sm whitespace-nowrap">
-                            <a href="https://npmjs.com/package/{{name}}" target="_blank" rel="noopener"
-                                onclick="event.stopPropagation()"
-                                class="text-blue-600 dark:text-blue-400 hover:underline">{{name}}</a>
-                        </td>
-                        <td class="px-6 py-4 text-sm whitespace-nowrap"
-                            data-severity-order="{{severityNumber severity}}">
-                            <span
-                                class="inline-block px-2 py-0.5 rounded text-xs font-semibold {{severityBadgeClass severity}}">{{severity}}</span>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                            {{#each _firstAdvisory.cwe}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
-                        </td>
-                    </tr>
-                    {{/each}}
-                </tbody>
-            </table>
-        </div>
-    </div>
+        {{else}}
 
-    <!-- Vulnerability modals -->
+        <!-- ── Clean bill of health ──────────────────────────── -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 text-center py-20">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 mb-4">
+                <svg class="w-8 h-8 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+                </svg>
+            </div>
+            <h2 class="text-lg font-bold text-emerald-700 dark:text-emerald-400 mb-1">No vulnerabilities found</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400">All {{numeral metadata.dependencies.total "0,0"}} dependencies are clean.</p>
+        </div>
+
+        {{/if}}
+
+        <!-- Footer -->
+        <p class="text-center text-xs text-slate-400 dark:text-slate-600 pb-2">
+            Generated by <a href="https://github.com/eventOneHQ/npm-audit-html" target="_blank" rel="noopener" class="hover:underline">npm-audit-html</a>
+        </p>
+
+    </main>
+
+    <!-- ── Vulnerability modals ──────────────────────────────── -->
     {{#each vulnerabilities}}
     <dialog id="vuln-modal-{{safeDomId name}}"
-        class="bg-white dark:bg-gray-800 dark:text-gray-100 rounded-lg shadow-xl max-w-3xl w-full mx-auto p-0 backdrop:bg-black/50">
-        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-            <h5 class="text-base font-semibold flex items-center gap-2 pr-4">
-                <span
-                    class="inline-block px-2 py-0.5 rounded text-xs font-semibold shrink-0 {{severityBadgeClass severity}}">{{severity}}</span>
-                {{_firstAdvisory.title}}
-            </h5>
+        class="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden border border-slate-200 dark:border-slate-700">
+
+        <!-- Severity color stripe -->
+        <div class="h-1 {{severityBadgeClass severity}}"></div>
+
+        <!-- Modal header -->
+        <div class="flex items-start gap-4 px-6 py-5 border-b border-slate-200 dark:border-slate-700">
+            <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold {{severityBadgeClass severity}}">{{severity}}</span>
+                    {{#if isDirect}}<span class="text-xs text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-600 rounded-full px-2 py-0.5 font-medium">direct</span>{{/if}}
+                </div>
+                <h2 class="text-base font-bold leading-snug">{{_firstAdvisory.title}}</h2>
+                <a href="https://npmjs.com/package/{{name}}" target="_blank" rel="noopener"
+                    class="font-mono text-sm text-blue-600 dark:text-blue-400 hover:underline mt-0.5 inline-block">{{name}}</a>
+            </div>
             <button onclick="closeModal('vuln-modal-{{safeDomId name}}')"
-                class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-2xl leading-none shrink-0"
-                aria-label="Close">&times;</button>
+                class="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                aria-label="Close">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
         </div>
-        <div class="p-4 overflow-y-auto max-h-[70vh]">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 text-sm">
-                <ul class="space-y-1">
-                    <li>Module: <a href="https://npmjs.com/package/{{name}}" target="_blank" rel="noopener"
-                            class="text-blue-600 dark:text-blue-400 hover:underline">{{name}}</a></li>
-                    {{#if _firstAdvisory.cwe}}
-                    <li>{{#each _firstAdvisory.cwe}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</li>
-                    {{/if}}
-                </ul>
-                <ul class="space-y-1">
-                    {{#if range}}<li>Vulnerable: {{range}}</li>{{/if}}
-                    {{#if fixAvailable}}<li>Fix: {{fixAvailableText fixAvailable}}</li>{{/if}}
-                </ul>
+
+        <!-- Modal body -->
+        <div class="overflow-y-auto px-6 py-5 space-y-6" style="max-height: calc(90vh - 180px)">
+
+            <!-- Metadata grid -->
+            <div class="grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
+                {{#if _firstAdvisory.cwe}}
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">CWE</p>
+                    <p class="font-mono">{{#each _firstAdvisory.cwe}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</p>
+                </div>
+                {{/if}}
+                {{#if range}}
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Vulnerable range</p>
+                    <p class="font-mono">{{range}}</p>
+                </div>
+                {{/if}}
+                {{#if fixAvailable}}
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Fix</p>
+                    <p class="text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                        </svg>
+                        {{fixAvailableText fixAvailable}}
+                    </p>
+                </div>
+                {{/if}}
+                {{#if _firstAdvisory.url}}
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">Advisory</p>
+                    <a href="{{_firstAdvisory.url}}" target="_blank" rel="noopener"
+                        class="text-blue-600 dark:text-blue-400 hover:underline text-xs break-all">{{_firstAdvisory.url}}</a>
+                </div>
+                {{/if}}
             </div>
 
+            <!-- Overview -->
             {{#if _firstAdvisory.overview}}
-            <h3 class="text-sm font-semibold mt-4 mb-2 uppercase tracking-wide text-gray-500 dark:text-gray-400">Overview</h3>
-            <div class="text-sm">{{{markdown _firstAdvisory.overview}}}</div>
-            {{/if}}
-
-            <h3 class="text-sm font-semibold mt-4 mb-2 uppercase tracking-wide text-gray-500 dark:text-gray-400">Affected paths</h3>
-            <div class="flex flex-wrap gap-1 mb-2">
-                {{#each _paths}}
-                <span class="font-mono text-xs bg-gray-100 dark:bg-gray-700 rounded px-2 py-0.5">{{this}}</span>
-                {{/each}}
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-2">Overview</p>
+                <div class="text-sm leading-relaxed prose-like">{{{markdown _firstAdvisory.overview}}}</div>
             </div>
+            {{/if}}
 
+            <!-- Affected paths -->
+            {{#if _paths}}
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-2">
+                    Affected paths <span class="font-normal normal-case tracking-normal">({{_paths.length}})</span>
+                </p>
+                <div class="bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700 p-3 space-y-1 max-h-40 overflow-y-auto">
+                    {{#each _paths}}
+                    <p class="font-mono text-xs text-slate-700 dark:text-slate-300">{{this}}</p>
+                    {{/each}}
+                </div>
+            </div>
+            {{/if}}
+
+            <!-- Remediation -->
             {{#if _firstAdvisory.recommendation}}
-            <h3 class="text-sm font-semibold mt-4 mb-2 uppercase tracking-wide text-gray-500 dark:text-gray-400">Remediation</h3>
-            <div class="text-sm">{{{markdown _firstAdvisory.recommendation}}}</div>
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-2">Remediation</p>
+                <div class="text-sm leading-relaxed prose-like">{{{markdown _firstAdvisory.recommendation}}}</div>
+            </div>
             {{/if}}
 
+            <!-- References -->
             {{#if _firstAdvisory.references}}
-            <h3 class="text-sm font-semibold mt-4 mb-2 uppercase tracking-wide text-gray-500 dark:text-gray-400">References</h3>
-            <div class="text-sm">{{{markdown _firstAdvisory.references}}}</div>
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-2">References</p>
+                <div class="text-sm leading-relaxed prose-like">{{{markdown _firstAdvisory.references}}}</div>
+            </div>
             {{/if}}
 
-            {{#if isDirect}}
-            <p class="text-xs text-gray-400 dark:text-gray-500 mt-4">Direct dependency</p>
-            {{/if}}
         </div>
-        <div class="flex justify-end gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
+
+        <!-- Modal footer -->
+        <div class="flex items-center justify-end gap-2 px-6 py-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
             {{#if _firstAdvisory.url}}
             <a href="{{_firstAdvisory.url}}" target="_blank" rel="noopener"
-                class="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">More about this
-                vulnerability</a>
+                class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+                </svg>
+                View advisory
+            </a>
             {{/if}}
             <button onclick="closeModal('vuln-modal-{{safeDomId name}}')"
-                class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 text-sm rounded hover:bg-gray-300 dark:hover:bg-gray-500">Close</button>
+                class="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-sm font-semibold rounded-xl transition-colors">
+                Close
+            </button>
         </div>
     </dialog>
     {{/each}}
 
     <script>
-        function openModal(id) {
-            document.getElementById(id).showModal();
+        // ── Theme toggle ─────────────────────────────────────────────
+        function toggleTheme () {
+            document.documentElement.classList.toggle('dark')
+            updateThemeIcons()
+        }
+        function updateThemeIcons () {
+            var dark = document.documentElement.classList.contains('dark')
+            document.getElementById('icon-sun').classList.toggle('hidden', !dark)
+            document.getElementById('icon-moon').classList.toggle('hidden', dark)
+        }
+        updateThemeIcons()
+
+        // ── Filter button styles (applied via JS so Tailwind CDN can scan them) ──
+        ;(function styleBtns () {
+            var palette = {
+                all:      'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600',
+                critical: 'bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/60',
+                high:     'bg-orange-50 dark:bg-orange-950/60 text-orange-700 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900/60',
+                moderate: 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/60',
+                low:      'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/60',
+                info:     'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+            }
+            document.querySelectorAll('.filter-btn').forEach(function (btn) {
+                var key = btn.getAttribute('data-filter') || 'all'
+                btn.className = 'filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ' + (palette[key] || palette.all)
+            })
+        })()
+
+        // ── Modal ─────────────────────────────────────────────────────
+        function openModal (id) { document.getElementById(id).showModal() }
+        function closeModal (id) { document.getElementById(id).close() }
+
+        document.querySelectorAll('dialog').forEach(function (d) {
+            d.addEventListener('click', function (e) {
+                var r = d.getBoundingClientRect()
+                if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) d.close()
+            })
+        })
+
+        // ── Filter + Search ───────────────────────────────────────────
+        var currentFilter = 'all'
+        var currentSearch = ''
+
+        function applyFilters () {
+            var rows = document.querySelectorAll('#vuln-body tr')
+            var visible = 0
+            rows.forEach(function (row) {
+                var matchSev  = currentFilter === 'all' || row.getAttribute('data-severity') === currentFilter
+                var matchText = !currentSearch || row.textContent.toLowerCase().indexOf(currentSearch) !== -1
+                var show = matchSev && matchText
+                row.style.display = show ? '' : 'none'
+                if (show) visible++
+            })
+            var noResults = document.getElementById('no-results')
+            if (noResults) noResults.classList.toggle('hidden', visible > 0)
         }
 
-        function closeModal(id) {
-            document.getElementById(id).close();
+        var searchInput = document.getElementById('search')
+        if (searchInput) {
+            searchInput.addEventListener('input', function () {
+                currentSearch = this.value.toLowerCase()
+                applyFilters()
+            })
         }
 
-        // Close on backdrop click
-        document.querySelectorAll('dialog').forEach(function (dialog) {
-            dialog.addEventListener('click', function (e) {
-                var rect = dialog.getBoundingClientRect();
-                if (e.clientX < rect.left || e.clientX > rect.right ||
-                    e.clientY < rect.top || e.clientY > rect.bottom) {
-                    dialog.close();
-                }
-            });
-        });
+        document.querySelectorAll('.filter-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.remove('active') })
+                btn.classList.add('active')
+                currentFilter = btn.getAttribute('data-filter')
+                applyFilters()
+            })
+        })
 
-        // Search
-        document.getElementById('search').addEventListener('input', function () {
-            var q = this.value.toLowerCase();
-            document.querySelectorAll('#advisories-body tr').forEach(function (row) {
-                row.style.display = row.textContent.toLowerCase().indexOf(q) !== -1 ? '' : 'none';
-            });
-        });
+        // ── Sort ──────────────────────────────────────────────────────
+        var sortCol = 'severity'
+        var sortDir = 1
 
-        // Sort
-        var sortCol = 2, sortDir = 1;
+        function getCellValue (row, col) {
+            if (col === 'severity') return parseInt(row.getAttribute('data-severity-order'), 10) || 99
+            var tds = row.querySelectorAll('td')
+            var td = col === 'name' ? tds[1] : tds[2]
+            if (!td) return ''
+            return (td.getAttribute('data-sort') || td.textContent).trim().toLowerCase()
+        }
 
-        document.querySelectorAll('#advisories thead th[data-col]').forEach(function (th) {
-            th.addEventListener('click', function () {
-                var col = parseInt(this.getAttribute('data-col'));
-                if (sortCol === col) {
-                    sortDir *= -1;
-                } else {
-                    sortCol = col;
-                    sortDir = 1;
-                }
-                sortTable();
-                document.querySelectorAll('#advisories thead .sort-icon').forEach(function (i) {
-                    i.textContent = '⇅';
-                    i.classList.add('opacity-50');
-                });
-                var icon = th.querySelector('.sort-icon');
-                icon.textContent = sortDir === 1 ? '↑' : '↓';
-                icon.classList.remove('opacity-50');
-            });
-        });
-
-        function sortTable() {
-            var tbody = document.getElementById('advisories-body');
-            var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+        function sortTable () {
+            var tbody = document.getElementById('vuln-body')
+            if (!tbody) return
+            var rows = Array.from(tbody.querySelectorAll('tr'))
             rows.sort(function (a, b) {
-                var aVal, bVal;
-                if (sortCol === 2) {
-                    aVal = parseInt(a.querySelector('td[data-severity-order]').getAttribute('data-severity-order'));
-                    bVal = parseInt(b.querySelector('td[data-severity-order]').getAttribute('data-severity-order'));
-                } else {
-                    var aTd = a.querySelectorAll('td')[sortCol];
-                    var bTd = b.querySelectorAll('td')[sortCol];
-                    aVal = aTd ? aTd.textContent.trim().toLowerCase() : '';
-                    bVal = bTd ? bTd.textContent.trim().toLowerCase() : '';
-                }
-                if (aVal < bVal) return -sortDir;
-                if (aVal > bVal) return sortDir;
-                return 0;
-            });
-            rows.forEach(function (r) { tbody.appendChild(r); });
+                var av = getCellValue(a, sortCol)
+                var bv = getCellValue(b, sortCol)
+                if (av < bv) return -sortDir
+                if (av > bv) return sortDir
+                return 0
+            })
+            rows.forEach(function (r) { tbody.appendChild(r) })
         }
 
-        // Initial sort by severity
-        sortTable();
+        document.querySelectorAll('th.sortable').forEach(function (th) {
+            th.addEventListener('click', function () {
+                var col = this.getAttribute('data-col')
+                sortDir = sortCol === col ? sortDir * -1 : 1
+                sortCol = col
+                document.querySelectorAll('th.sortable .sort-icon').forEach(function (i) {
+                    i.textContent = '⇅'
+                    i.style.opacity = '0.4'
+                })
+                var icon = th.querySelector('.sort-icon')
+                icon.textContent = sortDir === 1 ? '↑' : '↓'
+                icon.style.opacity = '1'
+                sortTable()
+            })
+        })
+
+        sortTable()
     </script>
 </body>
 
